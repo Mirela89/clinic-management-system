@@ -1,2 +1,21 @@
+spring:
+  application:
+    name: medicare-plus
+  profiles:
+    active: dev
+  jpa:
+    open-in-view: false
+
 server:
   port: 8081
+
+logging:
+  level:
+    com.medicareplus: DEBUG
+    org.springframework.security: DEBUG
+  file:
+    name: logs/medicare-plus.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
