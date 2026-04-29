@@ -1,6 +1,6 @@
 package com.medicareplus.security;
 
-import com.medicareplus.common.dto.ApiResponse;
+import com.medicareplus.common.dto.AppResponse;
 import com.medicareplus.user.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,19 +21,19 @@ public class AuthController {
 
     // Inregistrare utilizator nou
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<Void>> register(
+    public ResponseEntity<AppResponse<Void>> register(
             @Valid @RequestBody RegisterRequest request) {
 
         if (userRepository.existsByUsername(request.getUsername())) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
-                    .body(ApiResponse.error("Username already in use."));
+                    .body(AppResponse.error("Username already in use."));
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
-                    .body(ApiResponse.error("Email already in use."));
+                    .body(AppResponse.error("Email already in use."));
         }
 
         User user = new User();
@@ -49,12 +49,12 @@ public class AuthController {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.success("User registered successfully.", null));
+                .body(AppResponse.success("User registered successfully.", null));
     }
 
     // Returneaza datele utilizatorului autentificat curent
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserInfoResponse>> getCurrentUser() {
+    public ResponseEntity<AppResponse<UserInfoResponse>> getCurrentUser() {
         Authentication authentication = SecurityContextHolder
                 .getContext()
                 .getAuthentication();
@@ -63,7 +63,7 @@ public class AuthController {
                 || authentication.getPrincipal().equals("anonymousUser")) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Not authenticated."));
+                    .body(AppResponse.error("Not authenticated."));
         }
 
         String username = authentication.getName();
@@ -80,6 +80,6 @@ public class AuthController {
                 user.getRole().name()
         );
 
-        return ResponseEntity.ok(ApiResponse.success(userInfo));
+        return ResponseEntity.ok(AppResponse.success(userInfo));
     }
 }

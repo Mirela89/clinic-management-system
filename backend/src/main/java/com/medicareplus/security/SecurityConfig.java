@@ -71,13 +71,17 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // CSRF - folosim cookie pentru compatibilitate cu React
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .ignoringRequestMatchers("/api/auth/**") // exceptam doar auth endpoints
-                )
+//                .csrf(csrf -> csrf
+//                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+//                        .ignoringRequestMatchers("/api/auth/**") // exceptam doar auth endpoints
+//                )
+                .csrf(csrf -> csrf.disable()) // TEMPORAR
 
                 // Autorizare endpoint-uri
                 .authorizeHttpRequests(auth -> auth
+                        // Swagger
+                        .requestMatchers("/swagger-ui/**", "/api-docs/**", "/swagger-ui.html", "/webjars/**").permitAll()
+
                         // Endpoint-uri publice
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()

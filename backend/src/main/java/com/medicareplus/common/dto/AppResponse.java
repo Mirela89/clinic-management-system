@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApiResponse<T> {
+public class AppResponse<T> {
 
     private boolean success;
     private String message;
@@ -19,18 +19,18 @@ public class ApiResponse<T> {
     private LocalDateTime timestamp;
 
     // Factory method for success responses
-    public static <T> ApiResponse<T> success(T data) {
-        return new ApiResponse<>(true, "Success", data, LocalDateTime.now());
+    public static <T> AppResponse<T> success(T data) {
+        return new AppResponse<>(true, "Success", data, LocalDateTime.now());
     }
 
     // Factory method for success responses with custom message
-    public static <T> ApiResponse<T> success(String message, T data) {
-        return new ApiResponse<>(true, message, data, LocalDateTime.now());
+    public static <T> AppResponse<T> success(String message, T data) {
+        return new AppResponse<>(true, message, data, LocalDateTime.now());
     }
 
     // Factory method for error responses
-    public static <T> ApiResponse<T> error(String message) {
-        return new ApiResponse<>(false, message, null, LocalDateTime.now());
+    public static <T> AppResponse<T> error(String message) {
+        return new AppResponse<>(false, message, null, LocalDateTime.now());
     }
 
 }
