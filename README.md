@@ -36,6 +36,24 @@ The goal is to build a web application that allows:
 - **Security:** Spring Security
 - **Testing:** JUnit 5, Mockito
 
+## Run with Docker
+
+The repository already includes a `docker-compose.yml` for PostgreSQL. It also starts the Spring Boot backend.
+
+1. Switch to the `dev` branch:
+   `git checkout dev`
+2. Start the containers from the repository root:
+   `docker compose up --build`
+3. The services will be available at:
+   - backend: `http://localhost:8081`
+   - PostgreSQL: `localhost:5433`
+
+For local backend execution outside Docker, the `dev` profile still works with the same defaults:
+- host: `localhost`
+- port: `5433`
+- database: `medicare_db`
+- user/password: `postgres`
+
 ## Data model
 
 ### Main entities
