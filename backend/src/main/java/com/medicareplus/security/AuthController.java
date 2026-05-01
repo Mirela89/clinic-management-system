@@ -2,6 +2,9 @@ package com.medicareplus.security;
 
 import com.medicareplus.common.dto.AppResponse;
 import com.medicareplus.user.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication", description = "API for registration and current authenticated user")
 public class AuthController {
 
     private final UserRepository userRepository;
@@ -21,6 +25,12 @@ public class AuthController {
 
     // Inregistrare utilizator nou
     @PostMapping("/register")
+    @Operation(summary = "Register user", description = "Registers a new user with the default PATIENT role.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "User registered successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Validation error"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "Username or email already in use")
+    })
     public ResponseEntity<AppResponse<Void>> register(
             @Valid @RequestBody RegisterRequest request) {
 
@@ -54,6 +64,11 @@ public class AuthController {
 
     // Returneaza datele utilizatorului autentificat curent
     @GetMapping("/me")
+    @Operation(summary = "Get current user", description = "Returns the currently authenticated user.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Current user retrieved successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Not authenticated")
+    })
     public ResponseEntity<AppResponse<UserInfoResponse>> getCurrentUser() {
         Authentication authentication = SecurityContextHolder
                 .getContext()

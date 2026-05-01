@@ -38,6 +38,6 @@ public class Prescription extends BaseEntity {
     private Consultation consultation;
 
     // O prescriptie poate avea mai multe medicamente, iar un medicament poate fi prescris in mai multe prescriptii
-    @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PrescriptionMedication> prescriptionMedications;
 }
