@@ -5,7 +5,6 @@ import com.medicareplus.common.exception.ResourceNotFoundException;
 import com.medicareplus.department.Department;
 import com.medicareplus.department.DepartmentRepository;
 import com.medicareplus.user.User;
-import com.medicareplus.user.UserInfoResponse;
 import com.medicareplus.user.UserRepository;
 import com.medicareplus.user.UserRole;
 import lombok.RequiredArgsConstructor;
@@ -79,14 +78,14 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional
     public void deleteDoctor(Long userId) {
-        Doctor doctor = findDoctor(userId);
-        if (doctor.getAppointments() != null && !doctor.getAppointments().isEmpty()) {
+        findDoctor(userId);
+        if (doctorRepository.hasAppointments(userId)) {
             throw new BusinessException("Doctor cannot be deleted because appointments are linked to this profile.");
         }
-        if (doctor.getSchedules() != null && !doctor.getSchedules().isEmpty()) {
+        if (doctorRepository.hasSchedules(userId)) {
             throw new BusinessException("Doctor cannot be deleted because schedules are linked to this profile.");
         }
-        doctorRepository.delete(doctor);
+        doctorRepository.deleteById(userId);
     }
 
     private Doctor findDoctor(Long userId) {
@@ -133,8 +132,8 @@ public class DoctorServiceImpl implements DoctorService {
         );
     }
 
-    private UserInfoResponse mapUser(User user) {
-        return new UserInfoResponse(
+    private DoctorUserInfo mapUser(User user) {
+        return new DoctorUserInfo(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),

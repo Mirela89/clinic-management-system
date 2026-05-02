@@ -77,6 +77,14 @@ public class MedicationController {
                 AppResponse.success("Medication updated successfully.", medicationService.updateMedication(id, request)));
     }
 
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
+    @Operation(summary = "Search medications", description = "Search medications by name.")
+    public ResponseEntity<AppResponse<List<MedicationResponse>>> searchMedications(
+            @RequestParam String q) {
+        return ResponseEntity.ok(AppResponse.success(medicationService.searchByName(q)));
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
     @Operation(summary = "Delete medication", description = "Deletes a medication by ID.")

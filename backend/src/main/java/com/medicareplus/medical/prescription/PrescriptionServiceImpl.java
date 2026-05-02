@@ -64,8 +64,11 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     @Override
     @Transactional
     public void deletePrescription(Long id) {
-        Prescription prescription = findPrescription(id);
-        prescriptionRepository.delete(prescription);
+        findPrescription(id);
+        if (prescriptionRepository.hasMedications(id)) {
+            throw new BusinessException("Prescription cannot be deleted because medications are linked to it.");
+        }
+        prescriptionRepository.deleteById(id);
     }
 
     private Prescription findPrescription(Long id) {

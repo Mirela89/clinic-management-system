@@ -13,7 +13,7 @@ import lombok.Setter;
 public class DoctorResponse {
 
     private Long userId;
-    private UserInfoResponse user;
+    private DoctorUserInfo user;
     private String specialization;
     private String licenseNumber;
     private Long departmentId;

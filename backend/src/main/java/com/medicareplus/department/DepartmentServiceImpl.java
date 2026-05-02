@@ -55,11 +55,11 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Override
     @Transactional
     public void deleteDepartment(Long id) {
-        Department department = findDepartment(id);
-        if (department.getDoctors() != null && !department.getDoctors().isEmpty()) {
+        findDepartment(id);
+        if (departmentRepository.hasDoctors(id)) {
             throw new BusinessException("Department cannot be deleted because doctors are linked to it.");
         }
-        departmentRepository.delete(department);
+        departmentRepository.deleteById(id);
     }
 
     private Department findDepartment(Long id) {

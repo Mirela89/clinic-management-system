@@ -23,7 +23,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Get all notifications", description = "Returns a list of all notifications.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notifications retrieved successfully"),
@@ -75,6 +75,20 @@ public class NotificationController {
             @Valid @RequestBody NotificationRequest request) {
         return ResponseEntity.ok(
                 AppResponse.success("Notification updated successfully.", notificationService.updateNotification(id, request)));
+    }
+
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Get notifications by user", description = "Returns all notifications for a specific user.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Notifications retrieved successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Authentication required")
+    })
+    public ResponseEntity<AppResponse<List<NotificationResponse>>> getNotificationsByUser(
+            @Parameter(description = "User ID") @PathVariable Long userId) {
+        return ResponseEntity.ok(AppResponse.success(
+                notificationService.getNotificationsByUserId(userId)));
     }
 
     @DeleteMapping("/{id}")

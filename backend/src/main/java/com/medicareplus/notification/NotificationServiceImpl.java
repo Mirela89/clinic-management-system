@@ -2,7 +2,6 @@ package com.medicareplus.notification;
 
 import com.medicareplus.common.exception.ResourceNotFoundException;
 import com.medicareplus.user.User;
-import com.medicareplus.user.UserInfoResponse;
 import com.medicareplus.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,11 +28,13 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public NotificationResponse getNotificationById(Long id) {
         return mapToResponse(findNotification(id));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<NotificationResponse> getAllNotifications() {
         return notificationRepository.findAll()
                 .stream()
@@ -51,10 +52,20 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<NotificationResponse> getNotificationsByUserId(Long userId) {
+        getUser(userId);
+        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public void deleteNotification(Long id) {
-        Notification notification = findNotification(id);
-        notificationRepository.delete(notification);
+        findNotification(id);
+        notificationRepository.deleteById(id);
     }
 
     private Notification findNotification(Long id) {
@@ -72,11 +83,13 @@ public class NotificationServiceImpl implements NotificationService {
         notification.setType(request.getType());
         notification.setStatus(request.getStatus());
         notification.setMessage(request.getMessage());
-        notification.setSentAt(request.getSentAt());
+
+        if (request.getStatus() == NotificationStatus.SENT && notification.getSentAt() == null) {
+            notification.setSentAt(LocalDateTime.now());
+        }
+
         if (creating) {
-            notification.setCreatedAt(request.getCreatedAt() != null ? request.getCreatedAt() : LocalDateTime.now());
-        } else {
-            notification.setCreatedAt(request.getCreatedAt() != null ? request.getCreatedAt() : notification.getCreatedAt());
+            notification.setCreatedAt(LocalDateTime.now());
         }
     }
 
@@ -92,15 +105,13 @@ public class NotificationServiceImpl implements NotificationService {
         );
     }
 
-    private UserInfoResponse mapUser(User user) {
-        return new UserInfoResponse(
+    private NotificationUserInfo mapUser(User user) {
+        return new NotificationUserInfo(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getFirstName(),
-                user.getLastName(),
-                user.getPhone(),
-                user.getRole().name()
+                user.getLastName()
         );
     }
 }

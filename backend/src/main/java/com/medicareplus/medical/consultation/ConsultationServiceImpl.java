@@ -58,14 +58,14 @@ public class ConsultationServiceImpl implements ConsultationService {
     @Override
     @Transactional
     public void deleteConsultation(Long id) {
-        Consultation consultation = findConsultation(id);
-        if (consultation.getPrescriptions() != null && !consultation.getPrescriptions().isEmpty()) {
+        findConsultation(id);
+        if (consultationRepository.hasPrescriptions(id)) {
             throw new BusinessException("Consultation cannot be deleted because prescriptions are linked to it.");
         }
-        if (consultation.getAnalyses() != null && !consultation.getAnalyses().isEmpty()) {
+        if (consultationRepository.hasAnalyses(id)) {
             throw new BusinessException("Consultation cannot be deleted because analyses are linked to it.");
         }
-        consultationRepository.delete(consultation);
+        consultationRepository.deleteById(id);
     }
 
     private Consultation findConsultation(Long id) {

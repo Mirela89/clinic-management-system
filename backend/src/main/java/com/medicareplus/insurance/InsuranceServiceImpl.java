@@ -55,11 +55,11 @@ public class InsuranceServiceImpl implements InsuranceService {
     @Override
     @Transactional
     public void deleteInsurance(Long id) {
-        Insurance insurance = findInsurance(id);
-        if (insurance.getPatients() != null && !insurance.getPatients().isEmpty()) {
+        findInsurance(id);
+        if (insuranceRepository.hasPatients(id)) {
             throw new BusinessException("Insurance cannot be deleted because patients are linked to it.");
         }
-        insuranceRepository.delete(insurance);
+        insuranceRepository.deleteById(id);
     }
 
     private Insurance findInsurance(Long id) {

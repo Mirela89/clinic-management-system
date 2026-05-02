@@ -55,6 +55,7 @@
     { "key": "doctorUserId", "value": "" },
     { "key": "departmentId", "value": "" },
     { "key": "insuranceId", "value": "" },
+    { "key": "scheduleId", "value": "" },
     { "key": "appointmentId", "value": "" },
     { "key": "consultationId", "value": "" },
     { "key": "medicationId", "value": "" },
@@ -67,9 +68,7 @@
       "name": "Auth - Register Public User",
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"username\": \"{{registeredUsername}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"email\": \"{{registeredEmail}}\",\n  \"firstName\": \"Elena\",\n  \"lastName\": \"Georgescu\",\n  \"phone\": \"0733333333\"\n}"
@@ -130,9 +129,7 @@
       ],
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"username\": \"{{patientUsername}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"email\": \"{{patientEmail}}\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ionescu\",\n  \"phone\": \"0711111111\",\n  \"role\": \"PATIENT\"\n}"
@@ -157,9 +154,7 @@
       ],
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"username\": \"{{doctorUsername}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"email\": \"{{doctorEmail}}\",\n  \"firstName\": \"Ana\",\n  \"lastName\": \"Popescu\",\n  \"phone\": \"0722222222\",\n  \"role\": \"DOCTOR\"\n}"
@@ -199,9 +194,7 @@
       "name": "Users - Update Doctor User",
       "request": {
         "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"username\": \"{{doctorUsername}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"email\": \"{{doctorEmail}}\",\n  \"firstName\": \"Ana\",\n  \"lastName\": \"Popescu\",\n  \"phone\": \"0722222299\",\n  \"role\": \"DOCTOR\"\n}"
@@ -226,9 +219,7 @@
       ],
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"name\": \"{{departmentName}}\",\n  \"description\": \"Heart care\",\n  \"floor\": 2\n}"
@@ -259,9 +250,7 @@
       "name": "Departments - Update",
       "request": {
         "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"name\": \"{{departmentName}}\",\n  \"description\": \"Heart and vascular care\",\n  \"floor\": 3\n}"
@@ -286,9 +275,7 @@
       ],
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"providerName\": \"MediCare Insurance\",\n  \"policyNumber\": \"{{policyNumber}}\",\n  \"coveragePercentage\": 80,\n  \"expiryDate\": \"2027-05-01\"\n}"
@@ -319,9 +306,7 @@
       "name": "Insurances - Update",
       "request": {
         "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"providerName\": \"MediCare Insurance Premium\",\n  \"policyNumber\": \"{{policyNumber}}\",\n  \"coveragePercentage\": 90,\n  \"expiryDate\": \"2027-12-31\"\n}"
@@ -334,9 +319,7 @@
       "name": "Patients - Create",
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"userId\": {{patientUserId}},\n  \"cnp\": \"{{patientCnp}}\",\n  \"dateOfBirth\": \"1998-03-14\",\n  \"address\": \"Iasi, Romania\",\n  \"bloodType\": \"A_POSITIVE\",\n  \"insuranceId\": {{insuranceId}}\n}"
@@ -367,9 +350,7 @@
       "name": "Patients - Update",
       "request": {
         "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"userId\": {{patientUserId}},\n  \"cnp\": \"{{patientCnp}}\",\n  \"dateOfBirth\": \"1998-03-14\",\n  \"address\": \"Bucharest, Romania\",\n  \"bloodType\": \"B_POSITIVE\",\n  \"insuranceId\": {{insuranceId}}\n}"
@@ -382,9 +363,7 @@
       "name": "Doctors - Create",
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"userId\": {{doctorUserId}},\n  \"specialization\": \"Cardiologist\",\n  \"licenseNumber\": \"{{licenseNumber}}\",\n  \"departmentId\": {{departmentId}}\n}"
@@ -415,14 +394,77 @@
       "name": "Doctors - Update",
       "request": {
         "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"userId\": {{doctorUserId}},\n  \"specialization\": \"Senior Cardiologist\",\n  \"licenseNumber\": \"{{licenseNumber}}\",\n  \"departmentId\": {{departmentId}}\n}"
         },
         "url": "{{baseUrl}}/api/doctors/{{doctorUserId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "DoctorSchedules - Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) pm.collectionVariables.set('scheduleId', json.data.id.toString());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"doctorId\": {{doctorUserId}},\n  \"dayOfWeek\": \"MONDAY\",\n  \"startTime\": \"09:00:00\",\n  \"endTime\": \"17:00:00\",\n  \"slotDurationMinutes\": 30,\n  \"isAvailable\": true\n}"
+        },
+        "url": "{{baseUrl}}/api/doctor-schedules"
+      },
+      "response": []
+    },
+    {
+      "name": "DoctorSchedules - Get All",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/doctor-schedules"
+      },
+      "response": []
+    },
+    {
+      "name": "DoctorSchedules - Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/doctor-schedules/{{scheduleId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "DoctorSchedules - Get By Doctor",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/doctor-schedules/doctor/{{doctorUserId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "DoctorSchedules - Update",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"doctorId\": {{doctorUserId}},\n  \"dayOfWeek\": \"MONDAY\",\n  \"startTime\": \"08:00:00\",\n  \"endTime\": \"16:00:00\",\n  \"slotDurationMinutes\": 45,\n  \"isAvailable\": true\n}"
+        },
+        "url": "{{baseUrl}}/api/doctor-schedules/{{scheduleId}}"
       },
       "response": []
     },
@@ -442,12 +484,10 @@
       ],
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"appointmentDate\": \"2026-05-10\",\n  \"durationMinutes\": 30,\n  \"status\": \"SCHEDULED\",\n  \"notes\": \"Initial consultation\",\n  \"patientId\": {{patientUserId}},\n  \"doctorId\": {{doctorUserId}}\n}"
+          "raw": "{\n  \"appointmentDate\": \"2026-05-10T10:00:00\",\n  \"durationMinutes\": 30,\n  \"status\": \"SCHEDULED\",\n  \"notes\": \"Initial consultation\",\n  \"patientId\": {{patientUserId}},\n  \"doctorId\": {{doctorUserId}}\n}"
         },
         "url": "{{baseUrl}}/api/appointments"
       },
@@ -475,12 +515,10 @@
       "name": "Appointments - Update",
       "request": {
         "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"appointmentDate\": \"2026-05-12\",\n  \"durationMinutes\": 45,\n  \"status\": \"COMPLETED\",\n  \"notes\": \"Consultation completed successfully\",\n  \"patientId\": {{patientUserId}},\n  \"doctorId\": {{doctorUserId}}\n}"
+          "raw": "{\n  \"appointmentDate\": \"2026-05-12T10:00:00\",\n  \"durationMinutes\": 45,\n  \"status\": \"COMPLETED\",\n  \"notes\": \"Consultation completed successfully\",\n  \"patientId\": {{patientUserId}},\n  \"doctorId\": {{doctorUserId}}\n}"
         },
         "url": "{{baseUrl}}/api/appointments/{{appointmentId}}"
       },
@@ -502,9 +540,7 @@
       ],
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"diagnosis\": \"Hypertension\",\n  \"notes\": \"Patient should monitor blood pressure daily\",\n  \"consultationDate\": \"2026-05-10T10:30:00\",\n  \"appointmentId\": {{appointmentId}}\n}"
@@ -535,9 +571,7 @@
       "name": "Consultations - Update",
       "request": {
         "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"diagnosis\": \"Stage 1 Hypertension\",\n  \"notes\": \"Lifestyle changes recommended\",\n  \"consultationDate\": \"2026-05-10T11:00:00\",\n  \"appointmentId\": {{appointmentId}}\n}"
@@ -562,9 +596,7 @@
       ],
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"name\": \"{{medicationName}}\",\n  \"activeSubstance\": \"Acetylsalicylic acid\",\n  \"dosage\": \"75mg\",\n  \"manufacturer\": \"Bayer\"\n}"
@@ -592,12 +624,29 @@
       "response": []
     },
     {
+      "name": "Medications - Search By Name",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/medications/search?q=Aspenter",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "medications", "search"],
+          "query": [
+            {
+              "key": "q",
+              "value": "Aspenter"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Medications - Update",
       "request": {
         "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"name\": \"{{medicationName}}\",\n  \"activeSubstance\": \"Acetylsalicylic acid\",\n  \"dosage\": \"100mg\",\n  \"manufacturer\": \"Bayer\"\n}"
@@ -622,9 +671,7 @@
       ],
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"issueDate\": \"2026-05-10\",\n  \"expiryDate\": \"2026-06-10\",\n  \"instructions\": \"Take after meals\",\n  \"consultationId\": {{consultationId}},\n  \"medications\": [\n    {\n      \"medicationId\": {{medicationId}},\n      \"quantity\": 30,\n      \"frequency\": \"ONCE_DAILY\",\n      \"durationDays\": 30\n    }\n  ]\n}"
@@ -655,9 +702,7 @@
       "name": "Prescriptions - Update",
       "request": {
         "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"issueDate\": \"2026-05-10\",\n  \"expiryDate\": \"2026-07-10\",\n  \"instructions\": \"Take after meals and monitor symptoms\",\n  \"consultationId\": {{consultationId}},\n  \"medications\": [\n    {\n      \"medicationId\": {{medicationId}},\n      \"quantity\": 60,\n      \"frequency\": \"TWICE_DAILY\",\n      \"durationDays\": 30\n    }\n  ]\n}"
@@ -682,9 +727,7 @@
       ],
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"patientId\": {{patientUserId}},\n  \"doctorId\": {{doctorUserId}},\n  \"consultationId\": {{consultationId}},\n  \"analysisType\": \"BLOOD_TEST\",\n  \"status\": \"PENDING\",\n  \"requestedDate\": \"2026-05-10\",\n  \"resultDate\": null,\n  \"mongoDocumentId\": null\n}"
@@ -715,9 +758,7 @@
       "name": "Analyses - Update",
       "request": {
         "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
           "raw": "{\n  \"patientId\": {{patientUserId}},\n  \"doctorId\": {{doctorUserId}},\n  \"consultationId\": {{consultationId}},\n  \"analysisType\": \"BLOOD_TEST\",\n  \"status\": \"COMPLETED\",\n  \"requestedDate\": \"2026-05-10\",\n  \"resultDate\": \"2026-05-12\",\n  \"mongoDocumentId\": \"mongo-doc-001\"\n}"
@@ -742,12 +783,10 @@
       ],
       "request": {
         "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"userId\": {{patientUserId}},\n  \"type\": \"APPOINTMENT_REMINDER\",\n  \"status\": \"PENDING\",\n  \"message\": \"You have an appointment tomorrow at 10:00.\",\n  \"sentAt\": null,\n  \"createdAt\": null\n}"
+          "raw": "{\n  \"userId\": {{patientUserId}},\n  \"type\": \"APPOINTMENT_REMINDER\",\n  \"status\": \"PENDING\",\n  \"message\": \"You have an appointment tomorrow at 10:00.\"\n}"
         },
         "url": "{{baseUrl}}/api/notifications"
       },
@@ -772,15 +811,26 @@
       "response": []
     },
     {
+      "name": "Notifications - Get By User",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/notifications/user/{{patientUserId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "notifications", "user", "{{patientUserId}}"]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "Notifications - Update",
       "request": {
         "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"userId\": {{patientUserId}},\n  \"type\": \"APPOINTMENT_REMINDER\",\n  \"status\": \"SENT\",\n  \"message\": \"You have an appointment tomorrow at 10:00.\",\n  \"sentAt\": \"2026-05-09T18:00:00\",\n  \"createdAt\": \"2026-05-09T17:55:00\"\n}"
+          "raw": "{\n  \"userId\": {{patientUserId}},\n  \"type\": \"APPOINTMENT_REMINDER\",\n  \"status\": \"SENT\",\n  \"message\": \"You have an appointment tomorrow at 10:00.\",\n  \"sentAt\": \"2026-05-09T18:00:00\"\n}"
         },
         "url": "{{baseUrl}}/api/notifications/{{notificationId}}"
       },
@@ -837,6 +887,15 @@
         "method": "DELETE",
         "header": [],
         "url": "{{baseUrl}}/api/medications/{{medicationId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "DoctorSchedules - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/doctor-schedules/{{scheduleId}}"
       },
       "response": []
     },

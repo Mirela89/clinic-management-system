@@ -15,7 +15,7 @@ import java.time.LocalDate;
 public class PatientResponse {
 
     private Long userId;
-    private UserInfoResponse user;
+    private PatientUserInfo user;
     private String cnp;
     private LocalDate dateOfBirth;
     private String address;

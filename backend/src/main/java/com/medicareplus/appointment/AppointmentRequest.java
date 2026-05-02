@@ -7,7 +7,7 @@ import jakarta.validation.constraints.FutureOrPresent;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -15,7 +15,7 @@ public class AppointmentRequest {
 
     @NotNull(message = "Appointment date is required.")
     @FutureOrPresent(message = "Appointment date must be today or later.")
-    private LocalDate appointmentDate;
+    private LocalDateTime appointmentDate;
 
     @NotNull(message = "Duration is required.")
     @Min(value = 1, message = "Duration must be at least 1 minute.")

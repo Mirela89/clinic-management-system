@@ -22,8 +22,4 @@ public class NotificationRequest {
 
     @NotBlank(message = "Notification message is required.")
     private String message;
-
-    private LocalDateTime sentAt;
-
-    private LocalDateTime createdAt;
 }

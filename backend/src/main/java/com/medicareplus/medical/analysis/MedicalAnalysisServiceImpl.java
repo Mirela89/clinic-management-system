@@ -34,11 +34,13 @@ public class MedicalAnalysisServiceImpl implements MedicalAnalysisService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public MedicalAnalysisResponse getAnalysisById(Long id) {
         return mapToResponse(findAnalysis(id));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MedicalAnalysisResponse> getAllAnalyses() {
         return medicalAnalysisRepository.findAll()
                 .stream()
@@ -56,10 +58,28 @@ public class MedicalAnalysisServiceImpl implements MedicalAnalysisService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<MedicalAnalysisResponse> getAnalysesByPatientId(Long patientId) {
+        return medicalAnalysisRepository.findByPatientUserId(patientId)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MedicalAnalysisResponse> getAnalysesByDoctorId(Long doctorId) {
+        return medicalAnalysisRepository.findByDoctorUserId(doctorId)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public void deleteAnalysis(Long id) {
-        MedicalAnalysis analysis = findAnalysis(id);
-        medicalAnalysisRepository.delete(analysis);
+        findAnalysis(id);
+        medicalAnalysisRepository.deleteById(id);
     }
 
     private MedicalAnalysis findAnalysis(Long id) {

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class NotificationResponse {
 
     private Long id;
-    private UserInfoResponse user;
+    private NotificationUserInfo user;
     private String type;
     private String status;
     private String message;

@@ -12,5 +12,7 @@ public interface MedicationService {
 
     MedicationResponse updateMedication(Long id, MedicationRequest request);
 
+    List<MedicationResponse> searchByName(String name);
+
     void deleteMedication(Long id);
 }

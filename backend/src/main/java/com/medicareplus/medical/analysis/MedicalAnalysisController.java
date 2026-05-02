@@ -77,6 +77,24 @@ public class MedicalAnalysisController {
                 AppResponse.success("Medical analysis updated successfully.", medicalAnalysisService.updateAnalysis(id, request)));
     }
 
+    @GetMapping("/patient/{patientId}")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
+    @Operation(summary = "Get analyses by patient")
+    public ResponseEntity<AppResponse<List<MedicalAnalysisResponse>>> getAnalysesByPatient(
+            @PathVariable Long patientId) {
+        return ResponseEntity.ok(AppResponse.success(
+                medicalAnalysisService.getAnalysesByPatientId(patientId)));
+    }
+
+    @GetMapping("/doctor/{doctorId}")
+    @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
+    @Operation(summary = "Get analyses by doctor")
+    public ResponseEntity<AppResponse<List<MedicalAnalysisResponse>>> getAnalysesByDoctor(
+            @PathVariable Long doctorId) {
+        return ResponseEntity.ok(AppResponse.success(
+                medicalAnalysisService.getAnalysesByDoctorId(doctorId)));
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
     @Operation(summary = "Delete analysis", description = "Deletes a medical analysis by ID.")

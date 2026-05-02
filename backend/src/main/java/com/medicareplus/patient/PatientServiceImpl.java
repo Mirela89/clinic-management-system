@@ -88,11 +88,11 @@ public class PatientServiceImpl implements PatientService {
     @Override
     @Transactional
     public void deletePatient(Long userId) {
-        Patient patient = findPatient(userId);
-        if (patient.getAppointments() != null && !patient.getAppointments().isEmpty()) {
+        findPatient(userId);
+        if (patientRepository.hasAppointments(userId)) {
             throw new BusinessException("Patient cannot be deleted because appointments are linked to this profile.");
         }
-        patientRepository.delete(patient);
+        patientRepository.deleteById(userId);
     }
 
     private Patient findPatient(Long userId) {
@@ -131,8 +131,8 @@ public class PatientServiceImpl implements PatientService {
         );
     }
 
-    private UserInfoResponse mapUser(User user) {
-        return new UserInfoResponse(
+    private PatientUserInfo mapUser(User user) {
+        return new PatientUserInfo(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),

@@ -25,11 +25,13 @@ public class MedicationServiceImpl implements MedicationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public MedicationResponse getMedicationById(Long id) {
         return mapToResponse(findMedication(id));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<MedicationResponse> getAllMedications() {
         return medicationRepository.findAll()
                 .stream()
@@ -47,13 +49,21 @@ public class MedicationServiceImpl implements MedicationService {
     }
 
     @Override
+    public List<MedicationResponse> searchByName(String name) {
+        return medicationRepository.findByNameContainingIgnoreCase(name)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public void deleteMedication(Long id) {
-        Medication medication = findMedication(id);
-        if (medication.getPrescriptionMedications() != null && !medication.getPrescriptionMedications().isEmpty()) {
+        findMedication(id);
+        if (medicationRepository.hasPrescriptions(id)) {
             throw new BusinessException("Medication cannot be deleted because prescriptions are linked to it.");
         }
-        medicationRepository.delete(medication);
+        medicationRepository.deleteById(id);
     }
 
     private Medication findMedication(Long id) {

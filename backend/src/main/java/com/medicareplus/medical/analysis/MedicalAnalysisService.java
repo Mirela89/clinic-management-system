@@ -12,5 +12,9 @@ public interface MedicalAnalysisService {
 
     MedicalAnalysisResponse updateAnalysis(Long id, MedicalAnalysisRequest request);
 
+    List<MedicalAnalysisResponse> getAnalysesByPatientId(Long patientId);
+
+    List<MedicalAnalysisResponse> getAnalysesByDoctorId(Long doctorId);
+
     void deleteAnalysis(Long id);
 }

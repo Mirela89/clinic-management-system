@@ -1,5 +1,6 @@
-package com.medicareplus.doctor;
+package com.medicareplus.doctor.schedule;
 
+import com.medicareplus.doctor.Doctor;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

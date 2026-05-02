@@ -6,6 +6,7 @@ import com.medicareplus.doctor.Doctor;
 import com.medicareplus.doctor.DoctorRepository;
 import com.medicareplus.patient.Patient;
 import com.medicareplus.patient.PatientRepository;
+import com.medicareplus.user.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,11 +56,11 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     public void deleteAppointment(Long id) {
-        Appointment appointment = findAppointment(id);
-        if (appointment.getConsultation() != null) {
+        findAppointment(id);
+        if (appointmentRepository.hasConsultation(id)) {
             throw new BusinessException("Appointment cannot be deleted because a consultation is linked to it.");
         }
-        appointmentRepository.delete(appointment);
+        appointmentRepository.deleteById(id);
     }
 
     private Appointment findAppointment(Long id) {
@@ -80,6 +81,13 @@ public class AppointmentServiceImpl implements AppointmentService {
     private void applyChanges(Appointment appointment, AppointmentRequest request) {
         Patient patient = getPatient(request.getPatientId());
         Doctor doctor = getDoctor(request.getDoctorId());
+
+        if (patient.getUser().getRole() != UserRole.PATIENT) {
+            throw new BusinessException("The specified user is not a patient.");
+        }
+        if (doctor.getUser().getRole() != UserRole.DOCTOR) {
+            throw new BusinessException("The specified user is not a doctor.");
+        }
 
         appointment.setAppointmentDate(request.getAppointmentDate());
         appointment.setDurationMinutes(request.getDurationMinutes());
