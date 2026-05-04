@@ -4,6 +4,8 @@ import com.medicareplus.common.exception.BusinessException;
 import com.medicareplus.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,12 +41,11 @@ public class MedicationServiceImpl implements MedicationService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MedicationResponse> getAllMedications() {
-        log.debug("Fetching all medications");
-        return medicationRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    public Page<MedicationResponse> getAllMedications(Pageable pageable) {
+        log.debug("Fetching medications - page: {}, size: {}, sort: {}",
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+        return medicationRepository.findAll(pageable)
+                .map(this::mapToResponse);
     }
 
     @Override

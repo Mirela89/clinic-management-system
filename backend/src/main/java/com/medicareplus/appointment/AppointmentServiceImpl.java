@@ -9,6 +9,8 @@ import com.medicareplus.patient.PatientRepository;
 import com.medicareplus.user.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,12 +47,12 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public List<AppointmentResponse> getAllAppointments() {
-        log.debug("Fetching all appointments");
-        return appointmentRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public Page<AppointmentResponse> getAllAppointments(Pageable pageable) {
+        log.debug("Fetching appointments - page: {}, size: {}, sort: {}",
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+        return appointmentRepository.findAll(pageable)
+                .map(this::mapToResponse);
     }
 
     @Override

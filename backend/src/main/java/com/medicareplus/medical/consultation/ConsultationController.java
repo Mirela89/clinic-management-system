@@ -7,6 +7,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,13 +28,25 @@ public class ConsultationController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
-    @Operation(summary = "Get all consultations", description = "Returns a list of all consultations.")
+    @Operation(summary = "Get all consultations", description = "Returns a paginated list of consultations.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Consultations retrieved successfully"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<AppResponse<List<ConsultationResponse>>> getAllConsultations() {
-        return ResponseEntity.ok(AppResponse.success(consultationService.getAllConsultations()));
+    public ResponseEntity<AppResponse<Page<ConsultationResponse>>> getAllConsultations(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "consultationDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        Pageable pageable = PageRequest.of(
+                page, size,
+                sortDir.equalsIgnoreCase("asc") ?
+                        Sort.by(sortBy).ascending() :
+                        Sort.by(sortBy).descending()
+        );
+        return ResponseEntity.ok(AppResponse.success(
+                consultationService.getAllConsultations(pageable)));
     }
 
     @GetMapping("/{id}")

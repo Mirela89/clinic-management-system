@@ -1,6 +1,7 @@
 package com.medicareplus.appointment;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface AppointmentService {
 
@@ -8,7 +9,7 @@ public interface AppointmentService {
 
     AppointmentResponse getAppointmentById(Long id);
 
-    List<AppointmentResponse> getAllAppointments();
+    Page<AppointmentResponse> getAllAppointments(Pageable pageable);
 
     AppointmentResponse updateAppointment(Long id, AppointmentRequest request);
 

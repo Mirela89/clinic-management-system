@@ -9,6 +9,8 @@ import com.medicareplus.user.UserRepository;
 import com.medicareplus.user.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,12 +61,12 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public List<PatientResponse> getAllPatients() {
-        log.debug("Fetching all patients");
-        return patientRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public Page<PatientResponse> getAllPatients(Pageable pageable) {
+        log.debug("Fetching patients - page: {}, size: {}, sort: {}",
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+        return patientRepository.findAll(pageable)
+                .map(this::mapToResponse);
     }
 
     @Override

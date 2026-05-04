@@ -1,6 +1,7 @@
 package com.medicareplus.medical.consultation;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ConsultationService {
 
@@ -8,7 +9,7 @@ public interface ConsultationService {
 
     ConsultationResponse getConsultationById(Long id);
 
-    List<ConsultationResponse> getAllConsultations();
+    Page<ConsultationResponse> getAllConsultations(Pageable pageable);
 
     ConsultationResponse updateConsultation(Long id, ConsultationRequest request);
 

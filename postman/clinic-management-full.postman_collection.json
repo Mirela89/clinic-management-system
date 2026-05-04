@@ -351,9 +351,18 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{baseUrl}}/api/patients"
-      },
-      "response": []
+        "url": {
+          "raw": "{{baseUrl}}/api/patients?page=0&size=5&sortBy=dateOfBirth&sortDir=asc",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "patients"],
+          "query": [
+            { "key": "page", "value": "0" },
+            { "key": "size", "value": "5" },
+            { "key": "sortBy", "value": "dateOfBirth" },
+            { "key": "sortDir", "value": "asc" }
+          ]
+        }
+      }
     },
     {
       "name": "Patients - Get By ID",
@@ -516,9 +525,18 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{baseUrl}}/api/appointments"
-      },
-      "response": []
+        "url": {
+          "raw": "{{baseUrl}}/api/appointments?page=0&size=5&sortBy=appointmentDate&sortDir=desc",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "appointments"],
+          "query": [
+            { "key": "page", "value": "0" },
+            { "key": "size", "value": "5" },
+            { "key": "sortBy", "value": "appointmentDate" },
+            { "key": "sortDir", "value": "desc" }
+          ]
+        }
+      }
     },
     {
       "name": "Appointments - Get By ID",
@@ -572,9 +590,18 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{baseUrl}}/api/consultations"
-      },
-      "response": []
+        "url": {
+          "raw": "{{baseUrl}}/api/consultations?page=0&size=5&sortBy=consultationDate&sortDir=desc",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "consultations"],
+          "query": [
+            { "key": "page", "value": "0" },
+            { "key": "size", "value": "5" },
+            { "key": "sortBy", "value": "consultationDate" },
+            { "key": "sortDir", "value": "desc" }
+          ]
+        }
+      }
     },
     {
       "name": "Consultations - Get By ID",
@@ -628,18 +655,18 @@
       "request": {
         "method": "GET",
         "header": [],
-        "url": "{{baseUrl}}/api/medications"
-      },
-      "response": []
-    },
-    {
-      "name": "Medications - Get By ID",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": "{{baseUrl}}/api/medications/{{medicationId}}"
-      },
-      "response": []
+        "url": {
+          "raw": "{{baseUrl}}/api/medications?page=0&size=5&sortBy=name&sortDir=asc",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "medications"],
+          "query": [
+            { "key": "page", "value": "0" },
+            { "key": "size", "value": "5" },
+            { "key": "sortBy", "value": "name" },
+            { "key": "sortDir", "value": "asc" }
+          ]
+        }
+      }
     },
     {
       "name": "Medications - Search By Name",
