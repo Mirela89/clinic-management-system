@@ -1,6 +1,6 @@
 package com.medicareplus.common.exception;
 
-import com.medicareplus.common.dto.ApiResponse;
+import com.medicareplus.common.dto.AppResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -16,25 +16,25 @@ public class GlobalExceptionHandler {
 
     // 404 - Resource not found exception
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleResourceNotFoundException(
+    public ResponseEntity<AppResponse<Void>> handleResourceNotFoundException(
             ResourceNotFoundException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(ApiResponse.error(ex.getMessage()));
+                .body(AppResponse.error(ex.getMessage()));
     }
 
     // 400 - Business logic exception
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ApiResponse<Void>> handleBusinessException(
+    public ResponseEntity<AppResponse<Void>> handleBusinessException(
             BusinessException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error(ex.getMessage()));
+                .body(AppResponse.error(ex.getMessage()));
     }
 
     // 400 - Validation exception (@Valid)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationException(
+    public ResponseEntity<AppResponse<Map<String, String>>> handleValidationException(
             MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
@@ -44,15 +44,15 @@ public class GlobalExceptionHandler {
         });
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ApiResponse.error("Validation error"));
+                .body(AppResponse.error("Validation error"));
     }
 
     // 500 - Generic exception handler for unexpected errors
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
+    public ResponseEntity<AppResponse<Void>> handleGenericException(Exception ex) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ApiResponse.error("An unexpected error occured: " + ex.getMessage()));
+                .body(AppResponse.error("An unexpected error occured: " + ex.getMessage()));
     }
 
 }

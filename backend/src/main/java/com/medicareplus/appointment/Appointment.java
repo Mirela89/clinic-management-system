@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "appointments")
@@ -27,7 +28,7 @@ public class Appointment extends BaseEntity {
     @NotNull
     @FutureOrPresent
     @Column(name = "appointment_date", nullable = false)
-    private LocalDate appointmentDate;
+    private LocalDateTime appointmentDate;
 
     @NotNull
     @Min(1)

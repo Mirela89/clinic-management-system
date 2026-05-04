@@ -2,6 +2,7 @@ package com.medicareplus.doctor;
 
 import com.medicareplus.appointment.Appointment;
 import com.medicareplus.department.Department;
+import com.medicareplus.doctor.schedule.DoctorSchedule;
 import com.medicareplus.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

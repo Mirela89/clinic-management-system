@@ -1,0 +1,429 @@
+{
+  "info": {
+    "_postman_id": "9ef7a6d8-6b9f-4f8b-9e7e-3b2a8d5f61f0",
+    "name": "Clinic Management System - Doctor CRUD",
+    "description": "Postman collection for quick Doctor CRUD testing against the local Spring Boot backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get('runSuffix')) {",
+          "    pm.collectionVariables.set('runSuffix', Date.now().toString());",
+          "}",
+          "",
+          "var suffix = pm.collectionVariables.get('runSuffix');",
+          "pm.collectionVariables.set('doctorUsername', 'doctor.' + suffix);",
+          "pm.collectionVariables.set('doctorEmail', 'doctor.' + suffix + '@medicare.com');",
+          "pm.collectionVariables.set('departmentName', 'Cardiology ' + suffix);",
+          "pm.collectionVariables.set('licenseNumber', 'DOC-' + suffix);"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "adminUsername",
+      "value": "admin"
+    },
+    {
+      "key": "adminPassword",
+      "value": "password123"
+    },
+    {
+      "key": "doctorPassword",
+      "value": "password123"
+    },
+    {
+      "key": "doctorUserId",
+      "value": ""
+    },
+    {
+      "key": "departmentId",
+      "value": ""
+    },
+    {
+      "key": "runSuffix",
+      "value": ""
+    },
+    {
+      "key": "doctorUsername",
+      "value": ""
+    },
+    {
+      "key": "doctorEmail",
+      "value": ""
+    },
+    {
+      "key": "departmentName",
+      "value": ""
+    },
+    {
+      "key": "licenseNumber",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Login Admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login successful', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "username",
+              "value": "{{adminUsername}}",
+              "type": "text"
+            },
+            {
+              "key": "password",
+              "value": "{{adminPassword}}",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "description": "Authenticates as admin. Postman will keep the session cookie for the next requests."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Create Doctor User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Doctor user created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) {",
+              "    pm.collectionVariables.set('doctorUserId', json.data.id.toString());",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{doctorUsername}}\",\n  \"password\": \"{{doctorPassword}}\",\n  \"email\": \"{{doctorEmail}}\",\n  \"firstName\": \"Ana\",\n  \"lastName\": \"Popescu\",\n  \"phone\": \"0712345678\",\n  \"role\": \"DOCTOR\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users"
+          ]
+        },
+        "description": "Creates a base user with the DOCTOR role. The returned id is stored in doctorUserId."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Create Department",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Department created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) {",
+              "    pm.collectionVariables.set('departmentId', json.data.id.toString());",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{departmentName}}\",\n  \"description\": \"Heart care\",\n  \"floor\": 2\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/departments",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "departments"
+          ]
+        },
+        "description": "Creates the department used by the doctor. The returned id is stored in departmentId."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Create Doctor Profile",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Doctor profile created', function () {",
+              "    pm.response.to.have.status(201);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": {{doctorUserId}},\n  \"specialization\": \"Cardiologist\",\n  \"licenseNumber\": \"{{licenseNumber}}\",\n  \"departmentId\": {{departmentId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/doctors",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "doctors"
+          ]
+        },
+        "description": "Creates the doctor profile for the previously created DOCTOR user."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Get All Doctors",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Doctors list retrieved', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/doctors",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "doctors"
+          ]
+        },
+        "description": "Returns the list of doctors. Verify that the newly created doctor appears in the response."
+      },
+      "response": []
+    },
+    {
+      "name": "6. Get Doctor By User ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Doctor retrieved by userId', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/doctors/{{doctorUserId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "doctors",
+            "{{doctorUserId}}"
+          ]
+        },
+        "description": "Fetches the doctor profile by the stored doctorUserId."
+      },
+      "response": []
+    },
+    {
+      "name": "7. Update Doctor",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Doctor updated', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": {{doctorUserId}},\n  \"specialization\": \"Senior Cardiologist\",\n  \"licenseNumber\": \"{{licenseNumber}}\",\n  \"departmentId\": {{departmentId}}\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/doctors/{{doctorUserId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "doctors",
+            "{{doctorUserId}}"
+          ]
+        },
+        "description": "Updates the specialization of the created doctor."
+      },
+      "response": []
+    },
+    {
+      "name": "8. Delete Doctor",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Doctor deleted', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/doctors/{{doctorUserId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "doctors",
+            "{{doctorUserId}}"
+          ]
+        },
+        "description": "Deletes the doctor profile."
+      },
+      "response": []
+    },
+    {
+      "name": "9. Delete Doctor User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Doctor user deleted', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/users/{{doctorUserId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users",
+            "{{doctorUserId}}"
+          ]
+        },
+        "description": "Optional cleanup step. Deletes the base user after the doctor profile was removed."
+      },
+      "response": []
+    }
+  ]
+}

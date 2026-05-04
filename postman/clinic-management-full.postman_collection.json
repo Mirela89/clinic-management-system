@@ -1,0 +1,975 @@
+{
+  "info": {
+    "_postman_id": "7c4b5d44-1d6c-44c0-9877-4c9e694f2f75",
+    "name": "Clinic Management System - Full API",
+    "description": "Full Postman collection for quickly testing the main backend endpoints in order.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get('runSuffix')) {",
+          "    pm.collectionVariables.set('runSuffix', Date.now().toString());",
+          "}",
+          "",
+          "var suffix = pm.collectionVariables.get('runSuffix');",
+          "var last13 = suffix.slice(-13).padStart(13, '1');",
+          "",
+          "pm.collectionVariables.set('registeredUsername', 'registered.' + suffix);",
+          "pm.collectionVariables.set('registeredEmail', 'registered.' + suffix + '@medicare.com');",
+          "pm.collectionVariables.set('patientUsername', 'patient.' + suffix);",
+          "pm.collectionVariables.set('patientEmail', 'patient.' + suffix + '@medicare.com');",
+          "pm.collectionVariables.set('doctorUsername', 'doctor.' + suffix);",
+          "pm.collectionVariables.set('doctorEmail', 'doctor.' + suffix + '@medicare.com');",
+          "pm.collectionVariables.set('departmentName', 'Cardiology ' + suffix);",
+          "pm.collectionVariables.set('policyNumber', 'POL-' + suffix);",
+          "pm.collectionVariables.set('licenseNumber', 'DOC-' + suffix);",
+          "pm.collectionVariables.set('patientCnp', last13);",
+          "pm.collectionVariables.set('medicationName', 'Aspenter ' + suffix);"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8081" },
+    { "key": "adminUsername", "value": "admin" },
+    { "key": "adminPassword", "value": "password123" },
+    { "key": "defaultPassword", "value": "password123" },
+    { "key": "runSuffix", "value": "" },
+    { "key": "registeredUsername", "value": "" },
+    { "key": "registeredEmail", "value": "" },
+    { "key": "patientUsername", "value": "" },
+    { "key": "patientEmail", "value": "" },
+    { "key": "doctorUsername", "value": "" },
+    { "key": "doctorEmail", "value": "" },
+    { "key": "departmentName", "value": "" },
+    { "key": "policyNumber", "value": "" },
+    { "key": "licenseNumber", "value": "" },
+    { "key": "patientCnp", "value": "" },
+    { "key": "medicationName", "value": "" },
+    { "key": "registeredUserId", "value": "" },
+    { "key": "patientUserId", "value": "" },
+    { "key": "doctorUserId", "value": "" },
+    { "key": "departmentId", "value": "" },
+    { "key": "insuranceId", "value": "" },
+    { "key": "scheduleId", "value": "" },
+    { "key": "appointmentId", "value": "" },
+    { "key": "consultationId", "value": "" },
+    { "key": "medicationId", "value": "" },
+    { "key": "prescriptionId", "value": "" },
+    { "key": "analysisId", "value": "" },
+    { "key": "notificationId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth - Register Public User",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{registeredUsername}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"email\": \"{{registeredEmail}}\",\n  \"firstName\": \"Elena\",\n  \"lastName\": \"Georgescu\",\n  \"phone\": \"0733333333\"\n}"
+        },
+        "url": "{{baseUrl}}/api/auth/register"
+      },
+      "response": []
+    },
+    {
+      "name": "Auth - Login Admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Login ok', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "username", "value": "{{adminUsername}}", "type": "text" },
+            { "key": "password", "value": "{{adminPassword}}", "type": "text" }
+          ]
+        },
+        "url": "{{baseUrl}}/api/auth/login"
+      },
+      "response": []
+    },
+    {
+      "name": "Audit - Get All Logs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/audit"
+      },
+      "response": []
+    },
+    {
+      "name": "Auth - Current User",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/auth/me"
+      },
+      "response": []
+    },
+    {
+      "name": "Audit - Get Logs By User",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/audit/user/1"
+      },
+      "response": []
+    },
+    {
+      "name": "Users - Create Patient User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) pm.collectionVariables.set('patientUserId', json.data.id.toString());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{patientUsername}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"email\": \"{{patientEmail}}\",\n  \"firstName\": \"Maria\",\n  \"lastName\": \"Ionescu\",\n  \"phone\": \"0711111111\",\n  \"role\": \"PATIENT\"\n}"
+        },
+        "url": "{{baseUrl}}/api/users"
+      },
+      "response": []
+    },
+    {
+      "name": "Users - Create Doctor User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) pm.collectionVariables.set('doctorUserId', json.data.id.toString());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{doctorUsername}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"email\": \"{{doctorEmail}}\",\n  \"firstName\": \"Ana\",\n  \"lastName\": \"Popescu\",\n  \"phone\": \"0722222222\",\n  \"role\": \"DOCTOR\"\n}"
+        },
+        "url": "{{baseUrl}}/api/users"
+      },
+      "response": []
+    },
+    {
+      "name": "Users - Get All",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/users"
+      },
+      "response": []
+    },
+    {
+      "name": "Users - Get Patient User By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/users/{{patientUserId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Users - Get Doctor User By Username",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/users/username/{{doctorUsername}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Users - Update Doctor User",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{doctorUsername}}\",\n  \"password\": \"{{defaultPassword}}\",\n  \"email\": \"{{doctorEmail}}\",\n  \"firstName\": \"Ana\",\n  \"lastName\": \"Popescu\",\n  \"phone\": \"0722222299\",\n  \"role\": \"DOCTOR\"\n}"
+        },
+        "url": "{{baseUrl}}/api/users/{{doctorUserId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Departments - Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) pm.collectionVariables.set('departmentId', json.data.id.toString());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{departmentName}}\",\n  \"description\": \"Heart care\",\n  \"floor\": 2\n}"
+        },
+        "url": "{{baseUrl}}/api/departments"
+      },
+      "response": []
+    },
+    {
+      "name": "Departments - Get All",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/departments"
+      },
+      "response": []
+    },
+    {
+      "name": "Departments - Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/departments/{{departmentId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Departments - Update",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{departmentName}}\",\n  \"description\": \"Heart and vascular care\",\n  \"floor\": 3\n}"
+        },
+        "url": "{{baseUrl}}/api/departments/{{departmentId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Insurances - Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) pm.collectionVariables.set('insuranceId', json.data.id.toString());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"providerName\": \"MediCare Insurance\",\n  \"policyNumber\": \"{{policyNumber}}\",\n  \"coveragePercentage\": 80,\n  \"expiryDate\": \"2027-05-01\"\n}"
+        },
+        "url": "{{baseUrl}}/api/insurances"
+      },
+      "response": []
+    },
+    {
+      "name": "Insurances - Get All",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/insurances"
+      },
+      "response": []
+    },
+    {
+      "name": "Insurances - Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/insurances/{{insuranceId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Insurances - Update",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"providerName\": \"MediCare Insurance Premium\",\n  \"policyNumber\": \"{{policyNumber}}\",\n  \"coveragePercentage\": 90,\n  \"expiryDate\": \"2027-12-31\"\n}"
+        },
+        "url": "{{baseUrl}}/api/insurances/{{insuranceId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Patients - Create",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": {{patientUserId}},\n  \"cnp\": \"{{patientCnp}}\",\n  \"dateOfBirth\": \"1998-03-14\",\n  \"address\": \"Iasi, Romania\",\n  \"bloodType\": \"A_POSITIVE\",\n  \"insuranceId\": {{insuranceId}}\n}"
+        },
+        "url": "{{baseUrl}}/api/patients"
+      },
+      "response": []
+    },
+    {
+      "name": "Patients - Get All",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/patients"
+      },
+      "response": []
+    },
+    {
+      "name": "Patients - Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/patients/{{patientUserId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Patients - Update",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": {{patientUserId}},\n  \"cnp\": \"{{patientCnp}}\",\n  \"dateOfBirth\": \"1998-03-14\",\n  \"address\": \"Bucharest, Romania\",\n  \"bloodType\": \"B_POSITIVE\",\n  \"insuranceId\": {{insuranceId}}\n}"
+        },
+        "url": "{{baseUrl}}/api/patients/{{patientUserId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Doctors - Create",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": {{doctorUserId}},\n  \"specialization\": \"Cardiologist\",\n  \"licenseNumber\": \"{{licenseNumber}}\",\n  \"departmentId\": {{departmentId}}\n}"
+        },
+        "url": "{{baseUrl}}/api/doctors"
+      },
+      "response": []
+    },
+    {
+      "name": "Doctors - Get All",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/doctors"
+      },
+      "response": []
+    },
+    {
+      "name": "Doctors - Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/doctors/{{doctorUserId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Doctors - Update",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": {{doctorUserId}},\n  \"specialization\": \"Senior Cardiologist\",\n  \"licenseNumber\": \"{{licenseNumber}}\",\n  \"departmentId\": {{departmentId}}\n}"
+        },
+        "url": "{{baseUrl}}/api/doctors/{{doctorUserId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "DoctorSchedules - Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) pm.collectionVariables.set('scheduleId', json.data.id.toString());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"doctorId\": {{doctorUserId}},\n  \"dayOfWeek\": \"MONDAY\",\n  \"startTime\": \"09:00:00\",\n  \"endTime\": \"17:00:00\",\n  \"slotDurationMinutes\": 30,\n  \"isAvailable\": true\n}"
+        },
+        "url": "{{baseUrl}}/api/doctor-schedules"
+      },
+      "response": []
+    },
+    {
+      "name": "DoctorSchedules - Get All",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/doctor-schedules"
+      },
+      "response": []
+    },
+    {
+      "name": "DoctorSchedules - Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/doctor-schedules/{{scheduleId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "DoctorSchedules - Get By Doctor",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/doctor-schedules/doctor/{{doctorUserId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "DoctorSchedules - Update",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"doctorId\": {{doctorUserId}},\n  \"dayOfWeek\": \"MONDAY\",\n  \"startTime\": \"08:00:00\",\n  \"endTime\": \"16:00:00\",\n  \"slotDurationMinutes\": 45,\n  \"isAvailable\": true\n}"
+        },
+        "url": "{{baseUrl}}/api/doctor-schedules/{{scheduleId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Appointments - Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) pm.collectionVariables.set('appointmentId', json.data.id.toString());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"appointmentDate\": \"2026-05-10T10:00:00\",\n  \"durationMinutes\": 30,\n  \"status\": \"SCHEDULED\",\n  \"notes\": \"Initial consultation\",\n  \"patientId\": {{patientUserId}},\n  \"doctorId\": {{doctorUserId}}\n}"
+        },
+        "url": "{{baseUrl}}/api/appointments"
+      },
+      "response": []
+    },
+    {
+      "name": "Appointments - Get All",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/appointments"
+      },
+      "response": []
+    },
+    {
+      "name": "Appointments - Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/appointments/{{appointmentId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Appointments - Update",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"appointmentDate\": \"2026-05-12T10:00:00\",\n  \"durationMinutes\": 45,\n  \"status\": \"COMPLETED\",\n  \"notes\": \"Consultation completed successfully\",\n  \"patientId\": {{patientUserId}},\n  \"doctorId\": {{doctorUserId}}\n}"
+        },
+        "url": "{{baseUrl}}/api/appointments/{{appointmentId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Consultations - Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) pm.collectionVariables.set('consultationId', json.data.id.toString());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"diagnosis\": \"Hypertension\",\n  \"notes\": \"Patient should monitor blood pressure daily\",\n  \"consultationDate\": \"2026-05-10T10:30:00\",\n  \"appointmentId\": {{appointmentId}}\n}"
+        },
+        "url": "{{baseUrl}}/api/consultations"
+      },
+      "response": []
+    },
+    {
+      "name": "Consultations - Get All",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/consultations"
+      },
+      "response": []
+    },
+    {
+      "name": "Consultations - Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/consultations/{{consultationId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Consultations - Update",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"diagnosis\": \"Stage 1 Hypertension\",\n  \"notes\": \"Lifestyle changes recommended\",\n  \"consultationDate\": \"2026-05-10T11:00:00\",\n  \"appointmentId\": {{appointmentId}}\n}"
+        },
+        "url": "{{baseUrl}}/api/consultations/{{consultationId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Medications - Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) pm.collectionVariables.set('medicationId', json.data.id.toString());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{medicationName}}\",\n  \"activeSubstance\": \"Acetylsalicylic acid\",\n  \"dosage\": \"75mg\",\n  \"manufacturer\": \"Bayer\"\n}"
+        },
+        "url": "{{baseUrl}}/api/medications"
+      },
+      "response": []
+    },
+    {
+      "name": "Medications - Get All",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/medications"
+      },
+      "response": []
+    },
+    {
+      "name": "Medications - Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/medications/{{medicationId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Medications - Search By Name",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/medications/search?q=Aspenter",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "medications", "search"],
+          "query": [
+            {
+              "key": "q",
+              "value": "Aspenter"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Medications - Update",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{medicationName}}\",\n  \"activeSubstance\": \"Acetylsalicylic acid\",\n  \"dosage\": \"100mg\",\n  \"manufacturer\": \"Bayer\"\n}"
+        },
+        "url": "{{baseUrl}}/api/medications/{{medicationId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Prescriptions - Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) pm.collectionVariables.set('prescriptionId', json.data.id.toString());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"issueDate\": \"2026-05-10\",\n  \"expiryDate\": \"2026-06-10\",\n  \"instructions\": \"Take after meals\",\n  \"consultationId\": {{consultationId}},\n  \"medications\": [\n    {\n      \"medicationId\": {{medicationId}},\n      \"quantity\": 30,\n      \"frequency\": \"ONCE_DAILY\",\n      \"durationDays\": 30\n    }\n  ]\n}"
+        },
+        "url": "{{baseUrl}}/api/prescriptions"
+      },
+      "response": []
+    },
+    {
+      "name": "Prescriptions - Get All",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/prescriptions"
+      },
+      "response": []
+    },
+    {
+      "name": "Prescriptions - Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/prescriptions/{{prescriptionId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Prescriptions - Update",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"issueDate\": \"2026-05-10\",\n  \"expiryDate\": \"2026-07-10\",\n  \"instructions\": \"Take after meals and monitor symptoms\",\n  \"consultationId\": {{consultationId}},\n  \"medications\": [\n    {\n      \"medicationId\": {{medicationId}},\n      \"quantity\": 60,\n      \"frequency\": \"TWICE_DAILY\",\n      \"durationDays\": 30\n    }\n  ]\n}"
+        },
+        "url": "{{baseUrl}}/api/prescriptions/{{prescriptionId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Analyses - Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) pm.collectionVariables.set('analysisId', json.data.id.toString());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"patientId\": {{patientUserId}},\n  \"doctorId\": {{doctorUserId}},\n  \"consultationId\": {{consultationId}},\n  \"analysisType\": \"BLOOD_TEST\",\n  \"status\": \"PENDING\",\n  \"requestedDate\": \"2026-05-10\",\n  \"resultDate\": null,\n  \"mongoDocumentId\": null\n}"
+        },
+        "url": "{{baseUrl}}/api/analyses"
+      },
+      "response": []
+    },
+    {
+      "name": "Analyses - Get All",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/analyses"
+      },
+      "response": []
+    },
+    {
+      "name": "Analyses - Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/analyses/{{analysisId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Analyses - Update",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"patientId\": {{patientUserId}},\n  \"doctorId\": {{doctorUserId}},\n  \"consultationId\": {{consultationId}},\n  \"analysisType\": \"BLOOD_TEST\",\n  \"status\": \"COMPLETED\",\n  \"requestedDate\": \"2026-05-10\",\n  \"resultDate\": \"2026-05-12\",\n  \"mongoDocumentId\": \"mongo-doc-001\"\n}"
+        },
+        "url": "{{baseUrl}}/api/analyses/{{analysisId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Notifications - Create",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.id) pm.collectionVariables.set('notificationId', json.data.id.toString());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": {{patientUserId}},\n  \"type\": \"APPOINTMENT_REMINDER\",\n  \"status\": \"PENDING\",\n  \"message\": \"You have an appointment tomorrow at 10:00.\"\n}"
+        },
+        "url": "{{baseUrl}}/api/notifications"
+      },
+      "response": []
+    },
+    {
+      "name": "Notifications - Get All",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/notifications"
+      },
+      "response": []
+    },
+    {
+      "name": "Notifications - Get By ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/notifications/{{notificationId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Notifications - Get By User",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/notifications/user/{{patientUserId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "notifications", "user", "{{patientUserId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Notifications - Update",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": {{patientUserId}},\n  \"type\": \"APPOINTMENT_REMINDER\",\n  \"status\": \"SENT\",\n  \"message\": \"You have an appointment tomorrow at 10:00.\",\n  \"sentAt\": \"2026-05-09T18:00:00\"\n}"
+        },
+        "url": "{{baseUrl}}/api/notifications/{{notificationId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Notifications - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/notifications/{{notificationId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Analyses - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/analyses/{{analysisId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Prescriptions - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/prescriptions/{{prescriptionId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Consultations - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/consultations/{{consultationId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Appointments - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/appointments/{{appointmentId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Medications - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/medications/{{medicationId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "DoctorSchedules - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/doctor-schedules/{{scheduleId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Doctors - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/doctors/{{doctorUserId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Patients - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/patients/{{patientUserId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Insurances - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/insurances/{{insuranceId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Departments - Delete",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/departments/{{departmentId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Users - Delete Doctor User",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/users/{{doctorUserId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "Users - Delete Patient User",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{baseUrl}}/api/users/{{patientUserId}}"
+      },
+      "response": []
+    }
+  ]
+}
