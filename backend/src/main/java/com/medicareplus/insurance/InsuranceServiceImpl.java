@@ -3,12 +3,14 @@ package com.medicareplus.insurance;
 import com.medicareplus.common.exception.BusinessException;
 import com.medicareplus.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InsuranceServiceImpl implements InsuranceService {
@@ -18,23 +20,28 @@ public class InsuranceServiceImpl implements InsuranceService {
     @Override
     @Transactional
     public InsuranceResponse createInsurance(InsuranceRequest request) {
+        log.info("Creating insurance with policy number: {}", request.getPolicyNumber());
         validatePolicyNumber(request.getPolicyNumber(), null);
 
         Insurance insurance = new Insurance();
         applyChanges(insurance, request);
 
-        return mapToResponse(insuranceRepository.save(insurance));
+        InsuranceResponse response = mapToResponse(insuranceRepository.save(insurance));
+        log.info("Insurance created successfully with id: {}", response.getId());
+        return response;
     }
 
     @Override
     @Transactional(readOnly = true)
     public InsuranceResponse getInsuranceById(Long id) {
+        log.debug("Fetching insurance with id: {}", id);
         return mapToResponse(findInsurance(id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<InsuranceResponse> getAllInsurances() {
+        log.debug("Fetching all insurances");
         return insuranceRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
@@ -44,22 +51,27 @@ public class InsuranceServiceImpl implements InsuranceService {
     @Override
     @Transactional
     public InsuranceResponse updateInsurance(Long id, InsuranceRequest request) {
+        log.info("Updating insurance with id: {}", id);
         Insurance insurance = findInsurance(id);
         validatePolicyNumber(request.getPolicyNumber(), insurance.getPolicyNumber());
 
         applyChanges(insurance, request);
 
-        return mapToResponse(insuranceRepository.save(insurance));
+        InsuranceResponse response = mapToResponse(insuranceRepository.save(insurance));
+        log.info("Insurance updated successfully with id: {}", id);
+        return response;
     }
 
     @Override
     @Transactional
     public void deleteInsurance(Long id) {
+        log.info("Deleting insurance with id: {}", id);
         findInsurance(id);
         if (insuranceRepository.hasPatients(id)) {
             throw new BusinessException("Insurance cannot be deleted because patients are linked to it.");
         }
         insuranceRepository.deleteById(id);
+        log.info("Insurance deleted successfully with id: {}", id);
     }
 
     private Insurance findInsurance(Long id) {

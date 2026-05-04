@@ -8,12 +8,14 @@ import com.medicareplus.user.User;
 import com.medicareplus.user.UserRepository;
 import com.medicareplus.user.UserRole;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DoctorServiceImpl implements DoctorService {
@@ -25,6 +27,8 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional
     public DoctorResponse createDoctor(DoctorRequest request) {
+        log.info("Creating doctor profile for userId: {}", request.getUserId());
+
         if (doctorRepository.existsById(request.getUserId())) {
             throw new BusinessException("Doctor profile already exists for this user.");
         }
@@ -39,16 +43,20 @@ public class DoctorServiceImpl implements DoctorService {
         doctor.setLicenseNumber(request.getLicenseNumber());
         doctor.setDepartment(department);
 
-        return mapToResponse(doctorRepository.save(doctor));
+        DoctorResponse response = mapToResponse(doctorRepository.save(doctor));
+        log.info("Doctor profile created successfully for userId: {}", request.getUserId());
+        return response;
     }
 
     @Override
     public DoctorResponse getDoctorById(Long userId) {
+        log.debug("Fetching doctor with userId: {}", userId);
         return mapToResponse(findDoctor(userId));
     }
 
     @Override
     public List<DoctorResponse> getAllDoctors() {
+        log.debug("Fetching all doctors");
         return doctorRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
@@ -58,6 +66,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     @Transactional
     public DoctorResponse updateDoctor(Long userId, DoctorRequest request) {
+        log.info("Updating doctor profile for userId: {}", userId);
         Doctor doctor = findDoctor(userId);
 
         if (!userId.equals(request.getUserId())) {
@@ -72,12 +81,15 @@ public class DoctorServiceImpl implements DoctorService {
         doctor.setLicenseNumber(request.getLicenseNumber());
         doctor.setDepartment(department);
 
-        return mapToResponse(doctorRepository.save(doctor));
+        DoctorResponse response = mapToResponse(doctorRepository.save(doctor));
+        log.info("Doctor profile updated successfully for userId: {}", userId);
+        return response;
     }
 
     @Override
     @Transactional
     public void deleteDoctor(Long userId) {
+        log.info("Deleting doctor profile for userId: {}", userId);
         findDoctor(userId);
         if (doctorRepository.hasAppointments(userId)) {
             throw new BusinessException("Doctor cannot be deleted because appointments are linked to this profile.");
@@ -86,6 +98,7 @@ public class DoctorServiceImpl implements DoctorService {
             throw new BusinessException("Doctor cannot be deleted because schedules are linked to this profile.");
         }
         doctorRepository.deleteById(userId);
+        log.info("Doctor profile deleted successfully for userId: {}", userId);
     }
 
     private Doctor findDoctor(Long userId) {

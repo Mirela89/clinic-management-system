@@ -8,12 +8,14 @@ import com.medicareplus.patient.Patient;
 import com.medicareplus.patient.PatientRepository;
 import com.medicareplus.user.UserRole;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AppointmentServiceImpl implements AppointmentService {
@@ -25,19 +27,26 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     public AppointmentResponse createAppointment(AppointmentRequest request) {
+        log.info("Creating appointment for patientId: {} with doctorId: {}",
+                request.getPatientId(), request.getDoctorId());
+
         Appointment appointment = new Appointment();
         applyChanges(appointment, request);
 
-        return mapToResponse(appointmentRepository.save(appointment));
+        AppointmentResponse response = mapToResponse(appointmentRepository.save(appointment));
+        log.info("Appointment created successfully with id: {}", response.getId());
+        return response;
     }
 
     @Override
     public AppointmentResponse getAppointmentById(Long id) {
+        log.debug("Fetching appointment with id: {}", id);
         return mapToResponse(findAppointment(id));
     }
 
     @Override
     public List<AppointmentResponse> getAllAppointments() {
+        log.debug("Fetching all appointments");
         return appointmentRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
@@ -47,20 +56,25 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     public AppointmentResponse updateAppointment(Long id, AppointmentRequest request) {
+        log.info("Updating appointment with id: {}", id);
         Appointment appointment = findAppointment(id);
         applyChanges(appointment, request);
 
-        return mapToResponse(appointmentRepository.save(appointment));
+        AppointmentResponse response = mapToResponse(appointmentRepository.save(appointment));
+        log.info("Appointment updated successfully with id: {}", id);
+        return response;
     }
 
     @Override
     @Transactional
     public void deleteAppointment(Long id) {
+        log.info("Deleting appointment with id: {}", id);
         findAppointment(id);
         if (appointmentRepository.hasConsultation(id)) {
             throw new BusinessException("Appointment cannot be deleted because a consultation is linked to it.");
         }
         appointmentRepository.deleteById(id);
+        log.info("Appointment deleted successfully with id: {}", id);
     }
 
     private Appointment findAppointment(Long id) {

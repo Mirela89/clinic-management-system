@@ -4,6 +4,7 @@ import com.medicareplus.common.exception.ResourceNotFoundException;
 import com.medicareplus.user.User;
 import com.medicareplus.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationServiceImpl implements NotificationService {
@@ -21,21 +23,28 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public NotificationResponse createNotification(NotificationRequest request) {
+        log.info("Creating notification for userId: {} of type: {}",
+                request.getUserId(), request.getType());
+
         Notification notification = new Notification();
         applyChanges(notification, request, true);
 
-        return mapToResponse(notificationRepository.save(notification));
+        NotificationResponse response = mapToResponse(notificationRepository.save(notification));
+        log.info("Notification created successfully with id: {}", response.getId());
+        return response;
     }
 
     @Override
     @Transactional(readOnly = true)
     public NotificationResponse getNotificationById(Long id) {
+        log.debug("Fetching notification with id: {}", id);
         return mapToResponse(findNotification(id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<NotificationResponse> getAllNotifications() {
+        log.debug("Fetching all notifications");
         return notificationRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
@@ -45,15 +54,19 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public NotificationResponse updateNotification(Long id, NotificationRequest request) {
+        log.info("Updating notification with id: {}", id);
         Notification notification = findNotification(id);
         applyChanges(notification, request, false);
 
-        return mapToResponse(notificationRepository.save(notification));
+        NotificationResponse response = mapToResponse(notificationRepository.save(notification));
+        log.info("Notification updated successfully with id: {}", id);
+        return response;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<NotificationResponse> getNotificationsByUserId(Long userId) {
+        log.debug("Fetching notifications for userId: {}", userId);
         getUser(userId);
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
@@ -64,8 +77,10 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public void deleteNotification(Long id) {
+        log.info("Deleting notification with id: {}", id);
         findNotification(id);
         notificationRepository.deleteById(id);
+        log.info("Notification deleted successfully with id: {}", id);
     }
 
     private Notification findNotification(Long id) {
@@ -86,6 +101,8 @@ public class NotificationServiceImpl implements NotificationService {
 
         if (request.getStatus() == NotificationStatus.SENT && notification.getSentAt() == null) {
             notification.setSentAt(LocalDateTime.now());
+            log.debug("Notification id: {} marked as SENT at: {}", notification.getId(),
+                    notification.getSentAt());
         }
 
         if (creating) {
