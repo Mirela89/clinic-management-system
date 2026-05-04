@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -28,6 +29,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsServiceImpl;
+    private final LoginSuccessHandler loginSuccessHandler;
+    private final LoginFailureHandler loginFailureHandler;
+    private final LogoutSuccessHandler logoutSuccessHandler;
 
     // BCrypt pentru criptarea parolelor
     @Bean
@@ -111,34 +115,14 @@ public class SecurityConfig {
                 // Formular de login adaptat pentru React (returneaza JSON)
                 .formLogin(form -> form
                         .loginProcessingUrl("/api/auth/login")
-                        .successHandler((request, response, authentication) -> {
-                            response.setStatus(HttpStatus.OK.value());
-                            response.setContentType("application/json");
-                            response.getWriter().write(
-                                    "{\"success\": true, \"message\": \"Login successful\", " +
-                                            "\"role\": \"" + authentication.getAuthorities()
-                                            .iterator().next().getAuthority() + "\"}"
-                            );
-                        })
-                        .failureHandler((request, response, exception) -> {
-                            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                            response.setContentType("application/json");
-                            response.getWriter().write(
-                                    "{\"success\": false, \"message\": \"Invalid username or password.\"}"
-                            );
-                        })
+                        .successHandler(loginSuccessHandler)
+                        .failureHandler(loginFailureHandler)
                 )
 
                 // Logout adaptat pentru React
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(HttpStatus.OK.value());
-                            response.setContentType("application/json");
-                            response.getWriter().write(
-                                    "{\"success\": true, \"message\": \"Logout successful.\"}"
-                            );
-                        })
+                        .logoutSuccessHandler(logoutSuccessHandler)
                         .deleteCookies("JSESSIONID")
                         .invalidateHttpSession(true)
                 )

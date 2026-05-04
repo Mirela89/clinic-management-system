@@ -105,11 +105,29 @@
       "response": []
     },
     {
+      "name": "Audit - Get All Logs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/audit"
+      },
+      "response": []
+    },
+    {
       "name": "Auth - Current User",
       "request": {
         "method": "GET",
         "header": [],
         "url": "{{baseUrl}}/api/auth/me"
+      },
+      "response": []
+    },
+    {
+      "name": "Audit - Get Logs By User",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/audit/user/1"
       },
       "response": []
     },
