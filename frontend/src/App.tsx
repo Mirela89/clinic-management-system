@@ -5,9 +5,15 @@ import Layout from './components/layout/Layout';
 import LoginPage from './pages/auth/LoginPage';
 import DashboardPage from './pages/admin/DashboardPage';
 import PatientsPage from './pages/admin/PatientsPage';
+import DoctorsPage from './pages/admin/DoctorsPage';
 import DoctorDashboardPage from './pages/doctor/DoctorDashboardPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import PatientDashboardPage from './pages/patient/PatientDashboardPage';
+import PatientAppointmentsPage from './pages/patient/PatientAppointmentsPage';
+import PatientConsultationsPage from './pages/patient/PatientConsultationsPage';
+import PatientPrescriptionsPage from './pages/patient/PatientPrescriptionsPage';
+import PatientProfilePage from './pages/patient/PatientProfilePage';
+import BookAppointmentPage from './pages/patient/BookAppointmentPage';
 import CompleteProfilePage from './pages/auth/CompleteProfilePage';
 import ServerErrorPage from './pages/error/ServerErrorPage';
 import NotFoundPage from './pages/error/NotFoundPage';
@@ -85,6 +91,11 @@ function AppRoutes() {
             <PatientsPage />
           </ProtectedRoute>
         } />
+        <Route path="doctors" element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <DoctorsPage />
+          </ProtectedRoute>
+        } />
 
         {/* Doctor routes */}
         <Route path="doctor/dashboard" element={
@@ -97,6 +108,31 @@ function AppRoutes() {
         <Route path="patient/dashboard" element={
           <ProtectedRoute roles={['PATIENT']}>
             <PatientDashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="patient/appointments" element={
+          <ProtectedRoute roles={['PATIENT']}>
+            <PatientAppointmentsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="patient/book-appointment" element={
+          <ProtectedRoute roles={['PATIENT']}>
+            <BookAppointmentPage />
+          </ProtectedRoute>
+        } />
+        <Route path="patient/consultations" element={
+          <ProtectedRoute roles={['PATIENT']}>
+            <PatientConsultationsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="patient/prescriptions" element={
+          <ProtectedRoute roles={['PATIENT']}>
+            <PatientPrescriptionsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="patient/profile" element={
+          <ProtectedRoute roles={['PATIENT']}>
+            <PatientProfilePage />
           </ProtectedRoute>
         } />
 

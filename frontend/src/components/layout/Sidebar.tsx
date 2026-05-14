@@ -27,8 +27,10 @@ const doctorNav: NavItem[] = [
 const patientNav: NavItem[] = [
   { label: 'Dashboard', path: '/patient/dashboard', icon: 'ti-layout-dashboard' },
   { label: 'Appointments', path: '/patient/appointments', icon: 'ti-calendar' },
+  { label: 'Book Appointment', path: '/patient/book-appointment', icon: 'ti-calendar-plus' },
   { label: 'Consultations', path: '/patient/consultations', icon: 'ti-file-text' },
   { label: 'Prescriptions', path: '/patient/prescriptions', icon: 'ti-pill' },
+  { label: 'Profile', path: '/patient/profile', icon: 'ti-user-circle' },
 ];
 
 export default function Sidebar() {

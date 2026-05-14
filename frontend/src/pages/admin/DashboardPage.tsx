@@ -1,6 +1,4 @@
 import { useAuth } from '../../context/useAuth';
-import { useQuery } from '@tanstack/react-query';
-import api from '../../api/axios';
 
 export default function DashboardPage() {
   const { user } = useAuth();

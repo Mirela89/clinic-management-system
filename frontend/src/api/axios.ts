@@ -8,11 +8,6 @@ const api = axios.create({
   },
 });
 
-function getCookie(name: string): string | null {
-  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-  return match ? decodeURIComponent(match[2]) : null;
-}
-
 api.interceptors.response.use(
   response => response,
   error => {
@@ -27,7 +22,7 @@ api.interceptors.response.use(
     if (status === 500) {
       window.location.href = '/500';
     }
-    if (status === 403) {
+    if (status === 403 && !error.config?.skipAuthRedirect) {
       window.location.href = '/unauthorized';
     }
 
