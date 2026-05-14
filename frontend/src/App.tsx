@@ -7,6 +7,9 @@ import DashboardPage from './pages/admin/DashboardPage';
 import PatientsPage from './pages/admin/PatientsPage';
 import DoctorsPage from './pages/admin/DoctorsPage';
 import DoctorDashboardPage from './pages/doctor/DoctorDashboardPage';
+import DoctorSchedulePage from './pages/doctor/DoctorSchedulePage';
+import DoctorAppointmentsPage from './pages/doctor/DoctorAppointmentsPage';
+import DoctorPatientsPage from './pages/doctor/DoctorPatientsPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import PatientDashboardPage from './pages/patient/PatientDashboardPage';
 import PatientAppointmentsPage from './pages/patient/PatientAppointmentsPage';
@@ -101,6 +104,21 @@ function AppRoutes() {
         <Route path="doctor/dashboard" element={
           <ProtectedRoute roles={['DOCTOR']}>
             <DoctorDashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="doctor/appointments" element={
+          <ProtectedRoute roles={['DOCTOR']}>
+            <DoctorAppointmentsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="doctor/patients" element={
+          <ProtectedRoute roles={['DOCTOR']}>
+            <DoctorPatientsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="doctor/schedule" element={
+          <ProtectedRoute roles={['DOCTOR']}>
+            <DoctorSchedulePage />
           </ProtectedRoute>
         } />
 
