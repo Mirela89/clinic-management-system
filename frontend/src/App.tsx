@@ -15,12 +15,12 @@ import PatientDashboardPage from './pages/patient/PatientDashboardPage';
 import PatientAppointmentsPage from './pages/patient/PatientAppointmentsPage';
 import PatientConsultationsPage from './pages/patient/PatientConsultationsPage';
 import PatientPrescriptionsPage from './pages/patient/PatientPrescriptionsPage';
-import PatientProfilePage from './pages/patient/PatientProfilePage';
 import BookAppointmentPage from './pages/patient/BookAppointmentPage';
 import CompleteProfilePage from './pages/auth/CompleteProfilePage';
 import ServerErrorPage from './pages/error/ServerErrorPage';
 import NotFoundPage from './pages/error/NotFoundPage';
 import UnauthorizedPage from './pages/error/UnauthorizedPage';
+import ProfilePage from './pages/ProfilePage';
 
 function ProtectedRoute({ children, roles }: {
   children: React.ReactNode;
@@ -58,15 +58,21 @@ function ProtectedRoute({ children, roles }: {
 }
 
 function AppRoutes() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+
+  const getDashboardPath = () => {
+      if (user?.role === 'ADMIN') return '/dashboard';
+      if (user?.role === 'DOCTOR') return '/doctor/dashboard';
+      return '/patient/dashboard';
+  };
 
   return (
     <Routes>
       <Route path="/login" element={
-        isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />
+          isAuthenticated ? <Navigate to={getDashboardPath()} replace /> : <LoginPage />
       } />
       <Route path="/register" element={
-        isAuthenticated ? <Navigate to="/dashboard" replace /> : <RegisterPage />
+          isAuthenticated ? <Navigate to={getDashboardPath()} replace /> : <RegisterPage />
       } />
       <Route path="/complete-profile" element={
         isAuthenticated ? <CompleteProfilePage /> : <Navigate to="/login" replace />
@@ -74,6 +80,7 @@ function AppRoutes() {
       <Route path="/500" element={<ServerErrorPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="*" element={<NotFoundPage />} />
+      <Route index element={<Navigate to={getDashboardPath()} replace />} />
 
       {/* Un singur Layout pentru toate rutele protejate */}
       <Route path="/" element={
@@ -89,6 +96,9 @@ function AppRoutes() {
             <DashboardPage />
           </ProtectedRoute>
         } />
+
+        <Route path="profile" element={<ProfilePage />} />
+
         <Route path="patients" element={
           <ProtectedRoute roles={['ADMIN', 'DOCTOR']}>
             <PatientsPage />
@@ -146,11 +156,6 @@ function AppRoutes() {
         <Route path="patient/prescriptions" element={
           <ProtectedRoute roles={['PATIENT']}>
             <PatientPrescriptionsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="patient/profile" element={
-          <ProtectedRoute roles={['PATIENT']}>
-            <PatientProfilePage />
           </ProtectedRoute>
         } />
 

@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
+import { useState } from 'react';
 
 interface NavItem {
   label: string;
@@ -30,13 +31,14 @@ const patientNav: NavItem[] = [
   { label: 'Book Appointment', path: '/patient/book-appointment', icon: 'ti-calendar-plus' },
   { label: 'Consultations', path: '/patient/consultations', icon: 'ti-file-text' },
   { label: 'Prescriptions', path: '/patient/prescriptions', icon: 'ti-pill' },
-  { label: 'Profile', path: '/patient/profile', icon: 'ti-user-circle' },
+  //{ label: 'Profile', path: '/patient/profile', icon: 'ti-user-circle' },
 ];
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const navItems = user?.role === 'ADMIN' ? adminNav
     : user?.role === 'DOCTOR' ? doctorNav
@@ -84,7 +86,10 @@ export default function Sidebar() {
 
       {/* User + Logout */}
       <div className="px-3 py-4 border-t border-slate-800">
-        <div className="flex items-center gap-3 px-3 py-2 mb-1">
+        <Link
+          to="/profile"
+          className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800/50 transition-colors mb-1"
+        >
           <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs text-slate-300 font-medium flex-shrink-0">
             {initials}
           </div>
@@ -94,15 +99,46 @@ export default function Sidebar() {
             </p>
             <p className="text-slate-500 text-xs">{user?.role}</p>
           </div>
-        </div>
+        </Link>
         <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-red-400 hover:bg-slate-800/50 transition-colors w-full"
+            onClick={() => setShowLogoutModal(true)}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-red-400 hover:bg-slate-800/50 transition-colors w-full"
         >
-          <i className="ti ti-logout text-base" aria-hidden="true" />
-          Sign out
+            <i className="ti ti-logout text-base" aria-hidden="true" />
+            Sign out
         </button>
       </div>
+
+      {/* Logout Modal */}
+            {showLogoutModal && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-2xl p-6 w-80 shadow-xl">
+                  <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <i className="ti ti-logout text-red-400 text-xl" aria-hidden="true" />
+                  </div>
+                  <h3 className="text-base font-semibold text-slate-900 text-center mb-1">
+                    Sign out
+                  </h3>
+                  <p className="text-sm text-slate-400 text-center mb-6">
+                    Are you sure you want to sign out of your account?
+                  </p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowLogoutModal(false)}
+                      className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl text-sm transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-2.5 rounded-xl text-sm transition-colors"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
     </aside>
   );
 }

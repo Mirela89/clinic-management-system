@@ -22,9 +22,8 @@ api.interceptors.response.use(
     if (status === 500) {
       window.location.href = '/500';
     }
-    if (status === 403 && !error.config?.skipAuthRedirect) {
-      window.location.href = '/unauthorized';
-    }
+
+    // 403 si 401 - lasam componentele sa gestioneze
 
     return Promise.reject(error);
   }

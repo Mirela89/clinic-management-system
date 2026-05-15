@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
 import api from '../../api/axios';
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -12,6 +12,14 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    if (!user || !loggedIn) return;
+    if (user.role === 'ADMIN') navigate('/dashboard');
+    else if (user.role === 'DOCTOR') navigate('/doctor/dashboard');
+    else navigate('/patient/dashboard');
+  }, [user, loggedIn]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,11 +27,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(username, password, rememberMe);
-      const res = await api.get('/api/auth/me');
-      const role = res.data.data.role;
-      if (role === 'ADMIN') navigate('/dashboard');
-      else if (role === 'DOCTOR') navigate('/doctor/dashboard');
-      else navigate('/patient/dashboard');
+      setLoggedIn(true);
     } catch {
       setError('Invalid username or password.');
     } finally {
