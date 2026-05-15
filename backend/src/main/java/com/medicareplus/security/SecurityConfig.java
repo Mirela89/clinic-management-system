@@ -3,6 +3,7 @@ package com.medicareplus.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -63,7 +64,7 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "http://localhost:5173"
         ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // necesar pentru cookies de sesiune
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -92,6 +93,8 @@ public class SecurityConfig {
                         // Endpoint-uri publice
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/consultations/patient/*").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/prescriptions/patient/*").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
 
                         // Endpoint-uri admin
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
@@ -110,6 +113,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/doctors/**").authenticated()
                         .requestMatchers("/api/patients/**").authenticated()
                         .requestMatchers("/api/notifications/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/api/appointments/*/cancel").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
 
                         // Orice alt request necesita autentificare
                         .anyRequest().authenticated()

@@ -10,6 +10,8 @@ public interface PrescriptionService {
 
     List<PrescriptionResponse> getAllPrescriptions();
 
+    List<PrescriptionResponse> getPrescriptionsByPatientId(Long patientId);
+
     PrescriptionResponse updatePrescription(Long id, PrescriptionRequest request);
 
     void deletePrescription(Long id);

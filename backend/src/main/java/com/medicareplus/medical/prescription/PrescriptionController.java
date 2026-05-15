@@ -61,6 +61,15 @@ public class PrescriptionController {
                 .body(AppResponse.success("Prescription created successfully.", prescriptionService.createPrescription(request)));
     }
 
+    @GetMapping("/patient/{patientId}")
+    @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR', 'ADMIN')")
+    @Operation(summary = "Get prescriptions by patient")
+    public ResponseEntity<AppResponse<List<PrescriptionResponse>>> getPrescriptionsByPatient(
+            @Parameter(description = "Patient ID") @PathVariable Long patientId) {
+        return ResponseEntity.ok(AppResponse.success(
+                prescriptionService.getPrescriptionsByPatientId(patientId)));
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
     @Operation(summary = "Update prescription", description = "Updates an existing prescription.")

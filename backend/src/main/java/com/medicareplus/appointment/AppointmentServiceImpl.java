@@ -56,6 +56,16 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<AppointmentResponse> getAppointmentsByPatientId(Long patientId) {
+        log.debug("Fetching appointments for patientId: {}", patientId);
+        return appointmentRepository.findByPatientUserIdOrderByAppointmentDateDesc(patientId)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public AppointmentResponse updateAppointment(Long id, AppointmentRequest request) {
         log.info("Updating appointment with id: {}", id);
@@ -65,6 +75,18 @@ public class AppointmentServiceImpl implements AppointmentService {
         AppointmentResponse response = mapToResponse(appointmentRepository.save(appointment));
         log.info("Appointment updated successfully with id: {}", id);
         return response;
+    }
+
+    @Override
+    @Transactional
+    public AppointmentResponse cancelAppointment(Long id) {
+        log.info("Cancelling appointment with id: {}", id);
+        Appointment appointment = findAppointment(id);
+        if (appointment.getStatus() != AppointmentStatus.SCHEDULED) {
+            throw new BusinessException("Only scheduled appointments can be cancelled.");
+        }
+        appointment.setStatus(AppointmentStatus.CANCELLED);
+        return mapToResponse(appointmentRepository.save(appointment));
     }
 
     @Override

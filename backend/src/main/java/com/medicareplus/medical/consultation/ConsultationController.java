@@ -62,6 +62,15 @@ public class ConsultationController {
         return ResponseEntity.ok(AppResponse.success(consultationService.getConsultationById(id)));
     }
 
+    @GetMapping("/patient/{patientId}")
+    @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR', 'ADMIN')")
+    @Operation(summary = "Get consultations by patient")
+    public ResponseEntity<AppResponse<List<ConsultationResponse>>> getConsultationsByPatient(
+            @Parameter(description = "Patient ID") @PathVariable Long patientId) {
+        return ResponseEntity.ok(AppResponse.success(
+                consultationService.getConsultationsByPatientId(patientId)));
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
     @Operation(summary = "Create consultation", description = "Creates a new consultation.")

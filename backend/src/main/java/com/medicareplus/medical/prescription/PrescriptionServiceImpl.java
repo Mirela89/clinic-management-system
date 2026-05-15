@@ -58,6 +58,17 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<PrescriptionResponse> getPrescriptionsByPatientId(Long patientId) {
+        log.debug("Fetching prescriptions for patientId: {}", patientId);
+        return prescriptionRepository
+                .findByConsultationAppointmentPatientUserIdOrderByIssueDateDesc(patientId)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public PrescriptionResponse updatePrescription(Long id, PrescriptionRequest request) {
         log.info("Updating prescription with id: {}", id);

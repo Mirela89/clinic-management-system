@@ -53,6 +53,17 @@ public class ConsultationServiceImpl implements ConsultationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ConsultationResponse> getConsultationsByPatientId(Long patientId) {
+        log.debug("Fetching consultations for patientId: {}", patientId);
+        return consultationRepository
+                .findByAppointmentPatientUserIdOrderByConsultationDateDesc(patientId)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public ConsultationResponse updateConsultation(Long id, ConsultationRequest request) {
         log.info("Updating consultation with id: {}", id);
