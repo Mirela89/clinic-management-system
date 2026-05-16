@@ -10,6 +10,7 @@ import DoctorDashboardPage from './pages/doctor/DoctorDashboardPage';
 import DoctorSchedulePage from './pages/doctor/DoctorSchedulePage';
 import DoctorAppointmentsPage from './pages/doctor/DoctorAppointmentsPage';
 import DoctorPatientsPage from './pages/doctor/DoctorPatientsPage';
+import DoctorConsultationsPage from './pages/doctor/DoctorConsultationsPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import PatientDashboardPage from './pages/patient/PatientDashboardPage';
 import PatientAppointmentsPage from './pages/patient/PatientAppointmentsPage';
@@ -124,6 +125,11 @@ function AppRoutes() {
         <Route path="doctor/patients" element={
           <ProtectedRoute roles={['DOCTOR']}>
             <DoctorPatientsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="doctor/consultations" element={
+          <ProtectedRoute roles={['DOCTOR']}>
+            <DoctorConsultationsPage />
           </ProtectedRoute>
         } />
         <Route path="doctor/schedule" element={
