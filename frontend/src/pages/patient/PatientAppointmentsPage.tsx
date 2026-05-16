@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/useAuth';
@@ -30,16 +30,13 @@ const statusStyles: Record<string, string> = {
   CANCELLED: 'bg-rose-50 text-rose-700 border-rose-100',
 };
 
-const statusIcons: Record<string, string> = {
-  SCHEDULED: 'ti-clock',
-  COMPLETED: 'ti-circle-check',
-  CANCELLED: 'ti-circle-x',
-};
-
 export default function PatientAppointmentsPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [cancelId, setCancelId] = useState<number | null>(null);
+  const [pageSize, setPageSize] = useState(5);
+  const [upcomingPage, setUpcomingPage] = useState(1);
+  const [historyPage, setHistoryPage] = useState(1);
 
   const { data: appointments = [], isLoading, isError } = useQuery({
     queryKey: ['patient-appointments', user?.id],
@@ -60,14 +57,37 @@ export default function PatientAppointmentsPage() {
     }
   });
 
-  const upcoming = appointments.filter(a => a.status === 'SCHEDULED');
-  const past = appointments.filter(a => a.status !== 'SCHEDULED');
+  const upcoming = [...appointments]
+    .filter(a => a.status === 'SCHEDULED')
+    .sort((left, right) => new Date(left.appointmentDate).getTime() - new Date(right.appointmentDate).getTime());
+
+  const past = [...appointments]
+    .filter(a => a.status !== 'SCHEDULED')
+    .sort((left, right) => new Date(right.appointmentDate).getTime() - new Date(left.appointmentDate).getTime());
+
+  const upcomingTotalPages = Math.max(1, Math.ceil(upcoming.length / pageSize));
+  const historyTotalPages = Math.max(1, Math.ceil(past.length / pageSize));
+
+  const upcomingPageItems = upcoming.slice((upcomingPage - 1) * pageSize, upcomingPage * pageSize);
+  const historyPageItems = past.slice((historyPage - 1) * pageSize, historyPage * pageSize);
 
   const stats = {
     scheduled: upcoming.length,
     completed: appointments.filter(a => a.status === 'COMPLETED').length,
     cancelled: appointments.filter(a => a.status === 'CANCELLED').length,
   };
+
+  useEffect(() => {
+    if (upcomingPage > upcomingTotalPages) {
+      setUpcomingPage(upcomingTotalPages);
+    }
+  }, [upcomingPage, upcomingTotalPages]);
+
+  useEffect(() => {
+    if (historyPage > historyTotalPages) {
+      setHistoryPage(historyTotalPages);
+    }
+  }, [historyPage, historyTotalPages]);
 
   if (isLoading) return (
     <div className="flex justify-center items-center h-64">
@@ -105,6 +125,30 @@ export default function PatientAppointmentsPage() {
         <StatCard icon="ti-circle-x" label="Cancelled" value={stats.cancelled} color="text-red-500" bg="bg-red-50" />
       </div>
 
+      {appointments.length > 0 && (
+        <div className="mb-6 flex justify-end">
+          <label className="flex items-center gap-3 text-sm text-slate-600">
+            <span>Per page</span>
+            <select
+              value={pageSize}
+              onChange={event => {
+                const nextPageSize = Number(event.target.value);
+                setPageSize(nextPageSize);
+                setUpcomingPage(1);
+                setHistoryPage(1);
+              }}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {[5, 10, 20].map(size => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
+
       {appointments.length === 0 ? (
         <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center">
           <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -130,7 +174,7 @@ export default function PatientAppointmentsPage() {
                 Upcoming - {upcoming.length}
               </h2>
               <div className="flex flex-col gap-3">
-                {upcoming.map(a => (
+                {upcomingPageItems.map(a => (
                   <AppointmentCard
                     key={a.id}
                     appointment={a}
@@ -138,6 +182,14 @@ export default function PatientAppointmentsPage() {
                   />
                 ))}
               </div>
+              <PaginationControls
+                currentPage={upcomingPage}
+                totalPages={upcomingTotalPages}
+                totalItems={upcoming.length}
+                pageSize={pageSize}
+                onPrevious={() => setUpcomingPage(prev => Math.max(1, prev - 1))}
+                onNext={() => setUpcomingPage(prev => Math.min(upcomingTotalPages, prev + 1))}
+              />
             </div>
           )}
 
@@ -148,10 +200,18 @@ export default function PatientAppointmentsPage() {
                 History - {past.length}
               </h2>
               <div className="flex flex-col gap-3">
-                {past.map(a => (
+                {historyPageItems.map(a => (
                   <AppointmentCard key={a.id} appointment={a} />
                 ))}
               </div>
+              <PaginationControls
+                currentPage={historyPage}
+                totalPages={historyTotalPages}
+                totalItems={past.length}
+                pageSize={pageSize}
+                onPrevious={() => setHistoryPage(prev => Math.max(1, prev - 1))}
+                onNext={() => setHistoryPage(prev => Math.min(historyTotalPages, prev + 1))}
+              />
             </div>
           )}
         </div>
@@ -257,6 +317,58 @@ function StatCard({ icon, label, value, color, bg }: {
       </div>
       <p className="text-2xl font-semibold text-slate-900">{value}</p>
       <p className="text-xs text-slate-400 mt-0.5">{label}</p>
+    </div>
+  );
+}
+
+function PaginationControls({
+  currentPage,
+  totalPages,
+  totalItems,
+  pageSize,
+  onPrevious,
+  onNext,
+}: {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  pageSize: number;
+  onPrevious: () => void;
+  onNext: () => void;
+}) {
+  if (totalItems <= pageSize) {
+    return null;
+  }
+
+  const start = (currentPage - 1) * pageSize + 1;
+  const end = Math.min(currentPage * pageSize, totalItems);
+
+  return (
+    <div className="mt-4 flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm text-slate-600">
+        Showing {start}-{end} of {totalItems}
+      </p>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onPrevious}
+          disabled={currentPage === 1}
+          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span className="text-sm text-slate-600">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={currentPage === totalPages}
+          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
     </div>
   );
 }
