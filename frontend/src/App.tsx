@@ -1,38 +1,27 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-} from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import { useAuth } from "./context/useAuth";
-import Layout from "./components/layout/Layout";
-import LoginPage from "./pages/auth/LoginPage";
-import DashboardPage from "./pages/admin/DashboardPage";
-import PatientsPage from "./pages/admin/PatientsPage";
-import DoctorsPage from "./pages/admin/DoctorsPage";
-import DoctorDashboardPage from "./pages/doctor/DoctorDashboardPage";
-import DoctorSchedulePage from "./pages/doctor/DoctorSchedulePage";
-import DoctorAppointmentsPage from "./pages/doctor/DoctorAppointmentsPage";
-import DoctorPatientsPage from "./pages/doctor/DoctorPatientsPage";
-import RegisterPage from "./pages/auth/RegisterPage";
-import PatientDashboardPage from "./pages/patient/PatientDashboardPage";
-import PatientAppointmentsPage from "./pages/patient/PatientAppointmentsPage";
-import PatientConsultationsPage from "./pages/patient/PatientConsultationsPage";
-import PatientPrescriptionsPage from "./pages/patient/PatientPrescriptionsPage";
-import BookAppointmentPage from "./pages/patient/BookAppointmentPage";
-import CompleteProfilePage from "./pages/auth/CompleteProfilePage";
-import ServerErrorPage from "./pages/error/ServerErrorPage";
-import NotFoundPage from "./pages/error/NotFoundPage";
-import UnauthorizedPage from "./pages/error/UnauthorizedPage";
-import ProfilePage from "./pages/ProfilePage";
-import PatientDetailsPage from "./pages/admin/PatientDetailsPage";
-import DoctorDetailsPage from "./pages/admin/DoctorDetailsPage";
-import AppointmentsPage from "./pages/admin/AppointmentsPage";
-import ConsultationsPage from "./pages/admin/ConsultationsPage";
-import InsurancesPage from "./pages/admin/InsurancesPage";
-import DepartmentsPage from "./pages/admin/DepartmentsPage";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/useAuth';
+import Layout from './components/layout/Layout';
+import LoginPage from './pages/auth/LoginPage';
+import DashboardPage from './pages/admin/DashboardPage';
+import PatientsPage from './pages/admin/PatientsPage';
+import DoctorsPage from './pages/admin/DoctorsPage';
+import DoctorDashboardPage from './pages/doctor/DoctorDashboardPage';
+import DoctorSchedulePage from './pages/doctor/DoctorSchedulePage';
+import DoctorAppointmentsPage from './pages/doctor/DoctorAppointmentsPage';
+import DoctorPatientsPage from './pages/doctor/DoctorPatientsPage';
+import DoctorConsultationsPage from './pages/doctor/DoctorConsultationsPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import PatientDashboardPage from './pages/patient/PatientDashboardPage';
+import PatientAppointmentsPage from './pages/patient/PatientAppointmentsPage';
+import PatientConsultationsPage from './pages/patient/PatientConsultationsPage';
+import PatientPrescriptionsPage from './pages/patient/PatientPrescriptionsPage';
+import BookAppointmentPage from './pages/patient/BookAppointmentPage';
+import CompleteProfilePage from './pages/auth/CompleteProfilePage';
+import ServerErrorPage from './pages/error/ServerErrorPage';
+import NotFoundPage from './pages/error/NotFoundPage';
+import UnauthorizedPage from './pages/error/UnauthorizedPage';
+import ProfilePage from './pages/ProfilePage';
 
 function ProtectedRoute({
   children,
@@ -216,38 +205,31 @@ function AppRoutes() {
         />
 
         {/* Doctor routes */}
-        <Route
-          path="doctor/dashboard"
-          element={
-            <ProtectedRoute roles={["DOCTOR"]}>
-              <DoctorDashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="doctor/appointments"
-          element={
-            <ProtectedRoute roles={["DOCTOR"]}>
-              <DoctorAppointmentsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="doctor/patients"
-          element={
-            <ProtectedRoute roles={["DOCTOR"]}>
-              <DoctorPatientsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="doctor/schedule"
-          element={
-            <ProtectedRoute roles={["DOCTOR"]}>
-              <DoctorSchedulePage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="doctor/dashboard" element={
+          <ProtectedRoute roles={['DOCTOR']}>
+            <DoctorDashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="doctor/appointments" element={
+          <ProtectedRoute roles={['DOCTOR']}>
+            <DoctorAppointmentsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="doctor/patients" element={
+          <ProtectedRoute roles={['DOCTOR']}>
+            <DoctorPatientsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="doctor/consultations" element={
+          <ProtectedRoute roles={['DOCTOR']}>
+            <DoctorConsultationsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="doctor/schedule" element={
+          <ProtectedRoute roles={['DOCTOR']}>
+            <DoctorSchedulePage />
+          </ProtectedRoute>
+        } />
 
         {/* Patient routes */}
         <Route
