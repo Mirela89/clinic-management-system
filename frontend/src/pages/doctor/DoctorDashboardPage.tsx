@@ -1,6 +1,6 @@
-import { useAuth } from '../../context/useAuth';
-import { Calendar, Users, FileText, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useAuth } from "../../context/useAuth";
+import { Calendar, Users, FileText, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function DoctorDashboardPage() {
   const { user } = useAuth();
@@ -40,27 +40,45 @@ export default function DoctorDashboardPage() {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h2>
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">
+          Quick Actions
+        </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Link to="/doctor/appointments"
-            className="flex flex-col items-center gap-2 p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors text-center">
+          <Link
+            to="/doctor/appointments"
+            className="flex flex-col items-center gap-2 p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors text-center"
+          >
             <Calendar className="h-6 w-6 text-blue-600" />
-            <span className="text-sm font-medium text-gray-700">My Schedule</span>
+            <span className="text-sm font-medium text-gray-700">
+              My Schedule
+            </span>
           </Link>
-          <Link to="/doctor/consultations/new"
-            className="flex flex-col items-center gap-2 p-4 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors text-center">
+          <Link
+            to="/doctor/consultations/new"
+            className="flex flex-col items-center gap-2 p-4 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-colors text-center"
+          >
             <FileText className="h-6 w-6 text-green-600" />
-            <span className="text-sm font-medium text-gray-700">New Consultation</span>
+            <span className="text-sm font-medium text-gray-700">
+              New Consultation
+            </span>
           </Link>
-          <Link to="/doctor/patients"
-            className="flex flex-col items-center gap-2 p-4 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-colors text-center">
+          <Link
+            to="/doctor/patients"
+            className="flex flex-col items-center gap-2 p-4 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-colors text-center"
+          >
             <Users className="h-6 w-6 text-purple-600" />
-            <span className="text-sm font-medium text-gray-700">My Patients</span>
+            <span className="text-sm font-medium text-gray-700">
+              My Patients
+            </span>
           </Link>
-          <Link to="/doctor/schedule"
-            className="flex flex-col items-center gap-2 p-4 rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors text-center">
+          <Link
+            to="/doctor/schedule"
+            className="flex flex-col items-center gap-2 p-4 rounded-lg border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors text-center"
+          >
             <Clock className="h-6 w-6 text-orange-600" />
-            <span className="text-sm font-medium text-gray-700">My Schedule</span>
+            <span className="text-sm font-medium text-gray-700">
+              My Schedule
+            </span>
           </Link>
         </div>
       </div>
@@ -68,21 +86,30 @@ export default function DoctorDashboardPage() {
   );
 }
 
-function StatCard({ icon, label, value, color, link }: {
+function StatCard({
+  icon,
+  label,
+  value,
+  color,
+  link,
+}: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  color: 'blue' | 'green' | 'purple';
+  color: "blue" | "green" | "purple";
   link: string;
 }) {
   const colors = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    purple: 'bg-purple-50 text-purple-600',
+    blue: "bg-blue-50 text-blue-600",
+    green: "bg-green-50 text-green-600",
+    purple: "bg-purple-50 text-purple-600",
   };
 
   return (
-    <Link to={link} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:border-blue-200 transition-colors">
+    <Link
+      to={link}
+      className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:border-blue-200 transition-colors"
+    >
       <div className={`inline-flex p-2 rounded-lg ${colors[color]} mb-4`}>
         {icon}
       </div>

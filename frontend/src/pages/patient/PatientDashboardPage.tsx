@@ -1,22 +1,25 @@
-import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '../../context/useAuth';
-import { Link } from 'react-router-dom';
-import api from '../../api/axios';
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "../../context/useAuth";
+import { Link } from "react-router-dom";
+import api from "../../api/axios";
 
 interface AppointmentResponse {
   id: number;
   appointmentDate: string;
   durationMinutes: number;
-  status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
   notes: string | null;
   doctorName: string;
   consultationId: number | null;
 }
 
 function formatDateTime(value: string) {
-  return new Date(value).toLocaleString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+  return new Date(value).toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -24,7 +27,7 @@ export default function PatientDashboardPage() {
   const { user } = useAuth();
 
   const { data: appointments = [] } = useQuery({
-    queryKey: ['patient-appointments', user?.id],
+    queryKey: ["patient-appointments", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
       const res = await api.get(`/api/appointments/patient/${user!.id}`);
@@ -34,18 +37,25 @@ export default function PatientDashboardPage() {
   });
 
   const upcoming = appointments
-    .filter(a => a.status === 'SCHEDULED')
-    .sort((a, b) => new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime());
+    .filter((a) => a.status === "SCHEDULED")
+    .sort(
+      (a, b) =>
+        new Date(a.appointmentDate).getTime() -
+        new Date(b.appointmentDate).getTime(),
+    );
 
   const nextAppointment = upcoming[0] || null;
 
   const stats = {
-    scheduled: appointments.filter(a => a.status === 'SCHEDULED').length,
-    completed: appointments.filter(a => a.status === 'COMPLETED').length,
+    scheduled: appointments.filter((a) => a.status === "SCHEDULED").length,
+    completed: appointments.filter((a) => a.status === "COMPLETED").length,
   };
 
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 
   return (
@@ -63,13 +73,19 @@ export default function PatientDashboardPage() {
         <div className="bg-slate-900 rounded-xl p-5 mb-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
-              <i className="ti ti-calendar-event text-white text-lg" aria-hidden="true" />
+              <i
+                className="ti ti-calendar-event text-white text-lg"
+                aria-hidden="true"
+              />
             </div>
             <div>
               <p className="text-xs text-slate-400 mb-0.5">Next appointment</p>
-              <p className="text-white font-medium text-sm">{nextAppointment.doctorName}</p>
+              <p className="text-white font-medium text-sm">
+                {nextAppointment.doctorName}
+              </p>
               <p className="text-slate-400 text-xs mt-0.5">
-                {formatDateTime(nextAppointment.appointmentDate)} · {nextAppointment.durationMinutes} min
+                {formatDateTime(nextAppointment.appointmentDate)} ·{" "}
+                {nextAppointment.durationMinutes} min
               </p>
             </div>
           </div>
@@ -85,11 +101,18 @@ export default function PatientDashboardPage() {
         <div className="bg-blue-50 border border-blue-100 rounded-xl p-5 mb-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
-              <i className="ti ti-calendar-plus text-blue-500 text-lg" aria-hidden="true" />
+              <i
+                className="ti ti-calendar-plus text-blue-500 text-lg"
+                aria-hidden="true"
+              />
             </div>
             <div>
-              <p className="text-sm font-medium text-slate-900">No upcoming appointments</p>
-              <p className="text-xs text-slate-400 mt-0.5">Book a visit with one of our specialists</p>
+              <p className="text-sm font-medium text-slate-900">
+                No upcoming appointments
+              </p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Book a visit with one of our specialists
+              </p>
             </div>
           </div>
           <Link
@@ -106,17 +129,31 @@ export default function PatientDashboardPage() {
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-white rounded-xl border border-slate-100 p-5">
           <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center mb-3">
-            <i className="ti ti-clock text-blue-500 text-base" aria-hidden="true" />
+            <i
+              className="ti ti-clock text-blue-500 text-base"
+              aria-hidden="true"
+            />
           </div>
-          <p className="text-2xl font-semibold text-slate-900">{stats.scheduled}</p>
-          <p className="text-xs text-slate-400 mt-0.5">Upcoming appointment{stats.scheduled !== 1 ? 's' : ''}</p>
+          <p className="text-2xl font-semibold text-slate-900">
+            {stats.scheduled}
+          </p>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Upcoming appointment{stats.scheduled !== 1 ? "s" : ""}
+          </p>
         </div>
         <div className="bg-white rounded-xl border border-slate-100 p-5">
           <div className="w-9 h-9 bg-emerald-50 rounded-lg flex items-center justify-center mb-3">
-            <i className="ti ti-circle-check text-emerald-500 text-base" aria-hidden="true" />
+            <i
+              className="ti ti-circle-check text-emerald-500 text-base"
+              aria-hidden="true"
+            />
           </div>
-          <p className="text-2xl font-semibold text-slate-900">{stats.completed}</p>
-          <p className="text-xs text-slate-400 mt-0.5">Completed visit{stats.completed !== 1 ? 's' : ''}</p>
+          <p className="text-2xl font-semibold text-slate-900">
+            {stats.completed}
+          </p>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Completed visit{stats.completed !== 1 ? "s" : ""}
+          </p>
         </div>
       </div>
 
@@ -156,7 +193,14 @@ export default function PatientDashboardPage() {
   );
 }
 
-function QuickLink({ to, icon, label, description, color, bg }: {
+function QuickLink({
+  to,
+  icon,
+  label,
+  description,
+  color,
+  bg,
+}: {
   to: string;
   icon: string;
   label: string;
@@ -169,14 +213,19 @@ function QuickLink({ to, icon, label, description, color, bg }: {
       to={to}
       className="flex items-center gap-3 p-4 rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50 transition-all group"
     >
-      <div className={`w-9 h-9 ${bg} rounded-lg flex items-center justify-center flex-shrink-0`}>
+      <div
+        className={`w-9 h-9 ${bg} rounded-lg flex items-center justify-center flex-shrink-0`}
+      >
         <i className={`ti ${icon} ${color} text-base`} aria-hidden="true" />
       </div>
       <div className="min-w-0">
         <p className="text-sm font-medium text-slate-800">{label}</p>
         <p className="text-xs text-slate-400 mt-0.5">{description}</p>
       </div>
-      <i className="ti ti-arrow-right text-slate-300 text-sm ml-auto group-hover:text-slate-500 transition-colors flex-shrink-0" aria-hidden="true" />
+      <i
+        className="ti ti-arrow-right text-slate-300 text-sm ml-auto group-hover:text-slate-500 transition-colors flex-shrink-0"
+        aria-hidden="true"
+      />
     </Link>
   );
 }

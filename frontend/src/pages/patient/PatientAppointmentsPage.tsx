@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/useAuth';
-import api from '../../api/axios';
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../context/useAuth";
+import api from "../../api/axios";
 
 interface AppointmentResponse {
   id: number;
   appointmentDate: string;
   durationMinutes: number;
-  status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
   notes: string | null;
   patientId: number;
   patientName: string;
@@ -18,22 +18,25 @@ interface AppointmentResponse {
 }
 
 function formatDateTime(value: string) {
-  return new Date(value).toLocaleString('en-GB', {
-    day: '2-digit', month: 'short', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+  return new Date(value).toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 const statusStyles: Record<string, string> = {
-  SCHEDULED: 'bg-blue-50 text-blue-700 border-blue-100',
-  COMPLETED: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-  CANCELLED: 'bg-rose-50 text-rose-700 border-rose-100',
+  SCHEDULED: "bg-blue-50 text-blue-700 border-blue-100",
+  COMPLETED: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  CANCELLED: "bg-rose-50 text-rose-700 border-rose-100",
 };
 
 const statusIcons: Record<string, string> = {
-  SCHEDULED: 'ti-clock',
-  COMPLETED: 'ti-circle-check',
-  CANCELLED: 'ti-circle-x',
+  SCHEDULED: "ti-clock",
+  COMPLETED: "ti-circle-check",
+  CANCELLED: "ti-circle-x",
 };
 
 export default function PatientAppointmentsPage() {
@@ -41,13 +44,17 @@ export default function PatientAppointmentsPage() {
   const queryClient = useQueryClient();
   const [cancelId, setCancelId] = useState<number | null>(null);
 
-  const { data: appointments = [], isLoading, isError } = useQuery({
-    queryKey: ['patient-appointments', user?.id],
+  const {
+    data: appointments = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["patient-appointments", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
       const res = await api.get(`/api/appointments/patient/${user!.id}`);
       return res.data.data as AppointmentResponse[];
-    }
+    },
   });
 
   const cancelMutation = useMutation({
@@ -55,39 +62,47 @@ export default function PatientAppointmentsPage() {
       await api.patch(`/api/appointments/${id}/cancel`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['patient-appointments', user?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["patient-appointments", user?.id],
+      });
       setCancelId(null);
-    }
+    },
   });
 
-  const upcoming = appointments.filter(a => a.status === 'SCHEDULED');
-  const past = appointments.filter(a => a.status !== 'SCHEDULED');
+  const upcoming = appointments.filter((a) => a.status === "SCHEDULED");
+  const past = appointments.filter((a) => a.status !== "SCHEDULED");
 
   const stats = {
     scheduled: upcoming.length,
-    completed: appointments.filter(a => a.status === 'COMPLETED').length,
-    cancelled: appointments.filter(a => a.status === 'CANCELLED').length,
+    completed: appointments.filter((a) => a.status === "COMPLETED").length,
+    cancelled: appointments.filter((a) => a.status === "CANCELLED").length,
   };
 
-  if (isLoading) return (
-    <div className="flex justify-center items-center h-64">
-      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
-    </div>
-  );
+  if (isLoading)
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
+      </div>
+    );
 
-  if (isError) return (
-    <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
-      Failed to load appointments.
-    </div>
-  );
+  if (isError)
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
+        Failed to load appointments.
+      </div>
+    );
 
   return (
     <div>
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">My Appointments</h1>
-          <p className="text-slate-400 text-sm mt-1">Track your scheduled visits and appointment history</p>
+          <h1 className="text-2xl font-semibold text-slate-900 tracking-tight">
+            My Appointments
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">
+            Track your scheduled visits and appointment history
+          </p>
         </div>
         <Link
           to="/patient/book-appointment"
@@ -100,18 +115,43 @@ export default function PatientAppointmentsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <StatCard icon="ti-clock" label="Scheduled" value={stats.scheduled} color="text-blue-500" bg="bg-blue-50" />
-        <StatCard icon="ti-circle-check" label="Completed" value={stats.completed} color="text-emerald-500" bg="bg-emerald-50" />
-        <StatCard icon="ti-circle-x" label="Cancelled" value={stats.cancelled} color="text-red-500" bg="bg-red-50" />
+        <StatCard
+          icon="ti-clock"
+          label="Scheduled"
+          value={stats.scheduled}
+          color="text-blue-500"
+          bg="bg-blue-50"
+        />
+        <StatCard
+          icon="ti-circle-check"
+          label="Completed"
+          value={stats.completed}
+          color="text-emerald-500"
+          bg="bg-emerald-50"
+        />
+        <StatCard
+          icon="ti-circle-x"
+          label="Cancelled"
+          value={stats.cancelled}
+          color="text-red-500"
+          bg="bg-red-50"
+        />
       </div>
 
       {appointments.length === 0 ? (
         <div className="bg-white rounded-xl border border-dashed border-slate-200 p-12 text-center">
           <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <i className="ti ti-calendar text-slate-300 text-2xl" aria-hidden="true" />
+            <i
+              className="ti ti-calendar text-slate-300 text-2xl"
+              aria-hidden="true"
+            />
           </div>
-          <h2 className="text-base font-semibold text-slate-900 mb-1">No appointments yet</h2>
-          <p className="text-sm text-slate-400 mb-6">Book your first appointment to get started.</p>
+          <h2 className="text-base font-semibold text-slate-900 mb-1">
+            No appointments yet
+          </h2>
+          <p className="text-sm text-slate-400 mb-6">
+            Book your first appointment to get started.
+          </p>
           <Link
             to="/patient/book-appointment"
             className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-colors"
@@ -122,7 +162,6 @@ export default function PatientAppointmentsPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-8">
-
           {/* Upcoming */}
           {upcoming.length > 0 && (
             <div>
@@ -130,7 +169,7 @@ export default function PatientAppointmentsPage() {
                 Upcoming - {upcoming.length}
               </h2>
               <div className="flex flex-col gap-3">
-                {upcoming.map(a => (
+                {upcoming.map((a) => (
                   <AppointmentCard
                     key={a.id}
                     appointment={a}
@@ -148,7 +187,7 @@ export default function PatientAppointmentsPage() {
                 History - {past.length}
               </h2>
               <div className="flex flex-col gap-3">
-                {past.map(a => (
+                {past.map((a) => (
                   <AppointmentCard key={a.id} appointment={a} />
                 ))}
               </div>
@@ -162,13 +201,17 @@ export default function PatientAppointmentsPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl">
             <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <i className="ti ti-calendar-x text-red-400 text-xl" aria-hidden="true" />
+              <i
+                className="ti ti-calendar-x text-red-400 text-xl"
+                aria-hidden="true"
+              />
             </div>
             <h3 className="text-base font-semibold text-slate-900 text-center mb-1">
               Cancel appointment
             </h3>
             <p className="text-sm text-slate-400 text-center mb-6">
-              Are you sure you want to cancel this appointment? This action cannot be undone.
+              Are you sure you want to cancel this appointment? This action
+              cannot be undone.
             </p>
             <div className="flex gap-3">
               <button
@@ -182,7 +225,7 @@ export default function PatientAppointmentsPage() {
                 disabled={cancelMutation.isPending}
                 className="flex-1 bg-red-500 hover:bg-red-600 text-white font-medium py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50"
               >
-                {cancelMutation.isPending ? 'Cancelling...' : 'Yes, cancel'}
+                {cancelMutation.isPending ? "Cancelling..." : "Yes, cancel"}
               </button>
             </div>
           </div>
@@ -192,7 +235,10 @@ export default function PatientAppointmentsPage() {
   );
 }
 
-function AppointmentCard({ appointment, onCancel }: {
+function AppointmentCard({
+  appointment,
+  onCancel,
+}: {
   appointment: AppointmentResponse;
   onCancel?: () => void;
 }) {
@@ -201,23 +247,40 @@ function AppointmentCard({ appointment, onCancel }: {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
-            <h2 className="text-lg font-semibold text-slate-900">{appointment.doctorName}</h2>
-            <span className={`rounded-full border px-3 py-1 text-xs font-medium ${statusStyles[appointment.status]}`}>
+            <h2 className="text-lg font-semibold text-slate-900">
+              {appointment.doctorName}
+            </h2>
+            <span
+              className={`rounded-full border px-3 py-1 text-xs font-medium ${statusStyles[appointment.status]}`}
+            >
               {appointment.status.toLowerCase()}
             </span>
           </div>
           <div className="grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
             <div className="flex items-center gap-2">
-              <i className="ti ti-calendar text-slate-400 text-sm" aria-hidden="true" />
+              <i
+                className="ti ti-calendar text-slate-400 text-sm"
+                aria-hidden="true"
+              />
               <span>{formatDateTime(appointment.appointmentDate)}</span>
             </div>
             <div className="flex items-center gap-2">
-              <i className="ti ti-clock text-slate-400 text-sm" aria-hidden="true" />
+              <i
+                className="ti ti-clock text-slate-400 text-sm"
+                aria-hidden="true"
+              />
               <span>{appointment.durationMinutes} minutes</span>
             </div>
             <div className="flex items-center gap-2">
-              <i className="ti ti-file-text text-slate-400 text-sm" aria-hidden="true" />
-              <span>{appointment.consultationId ? 'Consultation recorded' : 'Consultation pending'}</span>
+              <i
+                className="ti ti-file-text text-slate-400 text-sm"
+                aria-hidden="true"
+              />
+              <span>
+                {appointment.consultationId
+                  ? "Consultation recorded"
+                  : "Consultation pending"}
+              </span>
             </div>
           </div>
         </div>
@@ -225,10 +288,12 @@ function AppointmentCard({ appointment, onCancel }: {
         <div className="flex flex-col gap-3 lg:items-end lg:min-w-64">
           <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600 w-full">
             <p className="font-medium text-slate-800 mb-1">Visit notes</p>
-            <p className="leading-6">{appointment.notes || 'No notes provided for this appointment.'}</p>
+            <p className="leading-6">
+              {appointment.notes || "No notes provided for this appointment."}
+            </p>
           </div>
 
-          {appointment.status === 'SCHEDULED' && onCancel && (
+          {appointment.status === "SCHEDULED" && onCancel && (
             <button
               onClick={onCancel}
               className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 border border-red-100 hover:border-red-300 px-4 py-2 rounded-lg transition-colors self-end"
@@ -243,7 +308,13 @@ function AppointmentCard({ appointment, onCancel }: {
   );
 }
 
-function StatCard({ icon, label, value, color, bg }: {
+function StatCard({
+  icon,
+  label,
+  value,
+  color,
+  bg,
+}: {
   icon: string;
   label: string;
   value: number;
@@ -252,7 +323,9 @@ function StatCard({ icon, label, value, color, bg }: {
 }) {
   return (
     <div className="bg-white rounded-xl border border-slate-100 p-5">
-      <div className={`w-9 h-9 ${bg} rounded-lg flex items-center justify-center mb-3`}>
+      <div
+        className={`w-9 h-9 ${bg} rounded-lg flex items-center justify-center mb-3`}
+      >
         <i className={`ti ${icon} ${color} text-base`} aria-hidden="true" />
       </div>
       <p className="text-2xl font-semibold text-slate-900">{value}</p>

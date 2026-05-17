@@ -95,6 +95,8 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/consultations/patient/*").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/prescriptions/patient/*").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/insurances").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/departments").authenticated()
 
                         // Endpoint-uri admin
                         .requestMatchers("/api/users/**").hasRole("ADMIN")

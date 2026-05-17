@@ -1,10 +1,13 @@
-import { useAuth } from '../../context/useAuth';
+import { useAuth } from "../../context/useAuth";
 
 export default function DashboardPage() {
   const { user } = useAuth();
 
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  const today = new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 
   return (
@@ -59,7 +62,9 @@ export default function DashboardPage() {
 
       {/* Recent activity placeholder */}
       <div className="bg-white rounded-xl border border-gray-100 p-6">
-        <h2 className="text-sm font-medium text-gray-700 mb-4">Recent appointments</h2>
+        <h2 className="text-sm font-medium text-gray-700 mb-4">
+          Recent appointments
+        </h2>
         <p className="text-sm text-gray-400 text-center py-8">
           No data yet — connect the API to display recent appointments.
         </p>
@@ -68,7 +73,15 @@ export default function DashboardPage() {
   );
 }
 
-function StatCard({ icon, label, value, trend, trendColor, iconBg, iconColor }: {
+function StatCard({
+  icon,
+  label,
+  value,
+  trend,
+  trendColor,
+  iconBg,
+  iconColor,
+}: {
   icon: string;
   label: string;
   value: string;
@@ -85,7 +98,9 @@ function StatCard({ icon, label, value, trend, trendColor, iconBg, iconColor }: 
         </div>
       </div>
       <p className="text-2xl font-semibold text-gray-900 mb-1">{value}</p>
-      <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">{label}</p>
+      <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
+        {label}
+      </p>
       <p className={`text-xs ${trendColor}`}>{trend}</p>
     </div>
   );

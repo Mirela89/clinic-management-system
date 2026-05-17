@@ -1,6 +1,6 @@
-import { createContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
-import api from '../api/axios';
+import { createContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
+import api from "../api/axios";
 
 interface UserInfo {
   id: number;
@@ -9,14 +9,18 @@ interface UserInfo {
   firstName: string;
   lastName: string;
   phone: string;
-  role: 'ADMIN' | 'DOCTOR' | 'PATIENT';
+  role: "ADMIN" | "DOCTOR" | "PATIENT";
 }
 
 interface AuthContextType {
   user: UserInfo | null;
   loading: boolean;
   hasProfile: boolean | null;
-  login: (username: string, password: string, rememberMe?: boolean) => Promise<void>;
+  login: (
+    username: string,
+    password: string,
+    rememberMe?: boolean,
+  ) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   refreshProfile: () => Promise<void>;
@@ -30,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [hasProfile, setHasProfile] = useState<boolean | null>(null);
 
   const checkProfile = async (userId: number, role: string) => {
-    if (role !== 'PATIENT') {
+    if (role !== "PATIENT") {
       setHasProfile(true);
       return;
     }
@@ -43,8 +47,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    api.get('/api/auth/me')
-      .then(async res => {
+    api
+      .get("/api/auth/me")
+      .then(async (res) => {
         const userData = res.data.data;
         setUser(userData);
         await checkProfile(userData.id, userData.role);
@@ -56,26 +61,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = async (username: string, password: string, rememberMe: boolean = false) => {
+  const login = async (
+    username: string,
+    password: string,
+    rememberMe: boolean = false,
+  ) => {
     const formData = new URLSearchParams();
-    formData.append('username', username);
-    formData.append('password', password);
+    formData.append("username", username);
+    formData.append("password", password);
     if (rememberMe) {
-      formData.append('remember-me', 'on');
+      formData.append("remember-me", "on");
     }
 
-    await api.post('/api/auth/login', formData, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    await api.post("/api/auth/login", formData, {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
 
-    const res = await api.get('/api/auth/me');
+    const res = await api.get("/api/auth/me");
     const userData = res.data.data;
     setUser(userData);
     await checkProfile(userData.id, userData.role);
   };
 
   const logout = async () => {
-    await api.post('/api/auth/logout');
+    await api.post("/api/auth/logout");
     setUser(null);
     setHasProfile(null);
   };
@@ -85,15 +94,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      loading,
-      hasProfile,
-      login,
-      logout,
-      isAuthenticated: !!user,
-      refreshProfile,
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        hasProfile,
+        login,
+        logout,
+        isAuthenticated: !!user,
+        refreshProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

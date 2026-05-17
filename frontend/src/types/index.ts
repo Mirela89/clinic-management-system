@@ -12,7 +12,7 @@ export interface UserInfo {
   firstName: string;
   lastName: string;
   phone: string;
-  role: 'ADMIN' | 'DOCTOR' | 'PATIENT';
+  role: "ADMIN" | "DOCTOR" | "PATIENT";
 }
 
 export interface Page<T> {

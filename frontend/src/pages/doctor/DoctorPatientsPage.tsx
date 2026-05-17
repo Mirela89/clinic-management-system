@@ -1,15 +1,23 @@
-import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import type { ReactNode } from 'react';
-import { CalendarDays, Droplets, Mail, MapPin, Phone, UserRound, UsersRound } from 'lucide-react';
-import api from '../../api/axios';
-import { useAuth } from '../../context/useAuth';
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import type { ReactNode } from "react";
+import {
+  CalendarDays,
+  Droplets,
+  Mail,
+  MapPin,
+  Phone,
+  UserRound,
+  UsersRound,
+} from "lucide-react";
+import api from "../../api/axios";
+import { useAuth } from "../../context/useAuth";
 
 interface AppointmentResponse {
   id: number;
   appointmentDate: string;
   durationMinutes: number;
-  status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+  status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
   notes: string | null;
   patientId: number;
   patientName: string;
@@ -43,42 +51,52 @@ export default function DoctorPatientsPage() {
   const { user } = useAuth();
 
   const appointmentsQuery = useQuery({
-    queryKey: ['doctor-patients-appointments', user?.id],
+    queryKey: ["doctor-patients-appointments", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
-      const res = await api.get('/api/appointments', {
-        params: { page: 0, size: 200, sortBy: 'appointmentDate', sortDir: 'desc' },
+      const res = await api.get("/api/appointments", {
+        params: {
+          page: 0,
+          size: 200,
+          sortBy: "appointmentDate",
+          sortDir: "desc",
+        },
       });
       return res.data.data as Page<AppointmentResponse>;
-    }
+    },
   });
 
   const patientsQuery = useQuery({
-    queryKey: ['doctor-patients-profiles'],
+    queryKey: ["doctor-patients-profiles"],
     queryFn: async () => {
-      const res = await api.get('/api/patients', {
-        params: { page: 0, size: 200, sortBy: 'dateOfBirth', sortDir: 'asc' },
+      const res = await api.get("/api/patients", {
+        params: { page: 0, size: 200, sortBy: "dateOfBirth", sortDir: "asc" },
       });
       return res.data.data as Page<PatientResponse>;
-    }
+    },
   });
 
   const derivedPatients = useMemo(() => {
     if (!user?.id) return [];
 
     const doctorAppointments = (appointmentsQuery.data?.content ?? []).filter(
-      appointment => appointment.doctorId === user.id
+      (appointment) => appointment.doctorId === user.id,
     );
 
-    const byPatient = new Map<number, {
-      profile: PatientResponse | undefined;
-      appointmentCount: number;
-      latestAppointment: string;
-    }>();
+    const byPatient = new Map<
+      number,
+      {
+        profile: PatientResponse | undefined;
+        appointmentCount: number;
+        latestAppointment: string;
+      }
+    >();
 
     for (const appointment of doctorAppointments) {
       const existing = byPatient.get(appointment.patientId);
-      const profile = (patientsQuery.data?.content ?? []).find(patient => patient.userId === appointment.patientId);
+      const profile = (patientsQuery.data?.content ?? []).find(
+        (patient) => patient.userId === appointment.patientId,
+      );
 
       if (!existing) {
         byPatient.set(appointment.patientId, {
@@ -90,7 +108,10 @@ export default function DoctorPatientsPage() {
       }
 
       existing.appointmentCount += 1;
-      if (new Date(appointment.appointmentDate).getTime() > new Date(existing.latestAppointment).getTime()) {
+      if (
+        new Date(appointment.appointmentDate).getTime() >
+        new Date(existing.latestAppointment).getTime()
+      ) {
         existing.latestAppointment = appointment.appointmentDate;
       }
     }
@@ -103,7 +124,9 @@ export default function DoctorPatientsPage() {
         latestAppointment: value.latestAppointment,
       }))
       .sort(
-        (a, b) => new Date(b.latestAppointment).getTime() - new Date(a.latestAppointment).getTime()
+        (a, b) =>
+          new Date(b.latestAppointment).getTime() -
+          new Date(a.latestAppointment).getTime(),
       );
   }, [appointmentsQuery.data?.content, patientsQuery.data?.content, user?.id]);
 
@@ -128,7 +151,8 @@ export default function DoctorPatientsPage() {
       <div>
         <h1 className="text-2xl font-bold text-slate-900">My patients</h1>
         <p className="text-sm text-slate-500 mt-1">
-          Patients shown here are derived from the appointments currently assigned to you.
+          Patients shown here are derived from the appointments currently
+          assigned to you.
         </p>
       </div>
 
@@ -142,13 +166,16 @@ export default function DoctorPatientsPage() {
         <SummaryCard
           icon={<CalendarDays className="h-5 w-5 text-emerald-600" />}
           label="Total assigned visits"
-          value={derivedPatients.reduce((sum, patient) => sum + patient.appointmentCount, 0)}
+          value={derivedPatients.reduce(
+            (sum, patient) => sum + patient.appointmentCount,
+            0,
+          )}
           tone="bg-emerald-50"
         />
         <SummaryCard
           icon={<UserRound className="h-5 w-5 text-violet-600" />}
           label="Profiles found"
-          value={derivedPatients.filter(patient => patient.profile).length}
+          value={derivedPatients.filter((patient) => patient.profile).length}
           tone="bg-violet-50"
         />
       </div>
@@ -158,15 +185,21 @@ export default function DoctorPatientsPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-500">
             <UsersRound className="h-6 w-6" />
           </div>
-          <h2 className="text-lg font-semibold text-slate-900">No patients assigned yet</h2>
+          <h2 className="text-lg font-semibold text-slate-900">
+            No patients assigned yet
+          </h2>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-            Your patient list will populate automatically once appointments are booked on your schedule.
+            Your patient list will populate automatically once appointments are
+            booked on your schedule.
           </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {derivedPatients.map(patient => (
-            <article key={patient.patientId} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          {derivedPatients.map((patient) => (
+            <article
+              key={patient.patientId}
+              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
@@ -180,27 +213,48 @@ export default function DoctorPatientsPage() {
                           : `Patient #${patient.patientId}`}
                       </h2>
                       <p className="text-sm text-slate-500">
-                        Latest appointment: {formatDateTime(patient.latestAppointment)}
+                        Latest appointment:{" "}
+                        {formatDateTime(patient.latestAppointment)}
                       </p>
                     </div>
                   </div>
 
                   <div className="grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
-                    <InfoRow icon={<CalendarDays className="h-4 w-4" />} label={`${patient.appointmentCount} appointment(s)`} />
-                    <InfoRow icon={<Mail className="h-4 w-4" />} label={patient.profile?.user.email || 'Email unavailable'} />
-                    <InfoRow icon={<Phone className="h-4 w-4" />} label={patient.profile?.user.phone || 'Phone unavailable'} />
-                    <InfoRow icon={<Droplets className="h-4 w-4" />} label={formatBloodType(patient.profile?.bloodType)} />
-                    <InfoRow icon={<MapPin className="h-4 w-4" />} label={patient.profile?.address || 'Address unavailable'} />
-                    <InfoRow icon={<UserRound className="h-4 w-4" />} label={`Patient ID #${patient.patientId}`} />
+                    <InfoRow
+                      icon={<CalendarDays className="h-4 w-4" />}
+                      label={`${patient.appointmentCount} appointment(s)`}
+                    />
+                    <InfoRow
+                      icon={<Mail className="h-4 w-4" />}
+                      label={patient.profile?.user.email || "Email unavailable"}
+                    />
+                    <InfoRow
+                      icon={<Phone className="h-4 w-4" />}
+                      label={patient.profile?.user.phone || "Phone unavailable"}
+                    />
+                    <InfoRow
+                      icon={<Droplets className="h-4 w-4" />}
+                      label={formatBloodType(patient.profile?.bloodType)}
+                    />
+                    <InfoRow
+                      icon={<MapPin className="h-4 w-4" />}
+                      label={patient.profile?.address || "Address unavailable"}
+                    />
+                    <InfoRow
+                      icon={<UserRound className="h-4 w-4" />}
+                      label={`Patient ID #${patient.patientId}`}
+                    />
                   </div>
                 </div>
 
                 <div className="rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600 lg:min-w-72">
-                  <p className="font-medium text-slate-800 mb-1">Profile details</p>
+                  <p className="font-medium text-slate-800 mb-1">
+                    Profile details
+                  </p>
                   <p className="leading-6">
                     {patient.profile
-                      ? `Born on ${formatDate(patient.profile.dateOfBirth)}${patient.profile.insuranceProviderName ? ` • Insurance: ${patient.profile.insuranceProviderName}` : ''}.`
-                      : 'The patient profile could not be matched from the current response payload.'}
+                      ? `Born on ${formatDate(patient.profile.dateOfBirth)}${patient.profile.insuranceProviderName ? ` • Insurance: ${patient.profile.insuranceProviderName}` : ""}.`
+                      : "The patient profile could not be matched from the current response payload."}
                   </p>
                 </div>
               </div>
@@ -212,7 +266,12 @@ export default function DoctorPatientsPage() {
   );
 }
 
-function SummaryCard({ icon, label, value, tone }: {
+function SummaryCard({
+  icon,
+  label,
+  value,
+  tone,
+}: {
   icon: ReactNode;
   label: string;
   value: number;
@@ -220,9 +279,7 @@ function SummaryCard({ icon, label, value, tone }: {
 }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className={`mb-4 inline-flex rounded-xl p-3 ${tone}`}>
-        {icon}
-      </div>
+      <div className={`mb-4 inline-flex rounded-xl p-3 ${tone}`}>{icon}</div>
       <p className="text-3xl font-semibold text-slate-900">{value}</p>
       <p className="mt-1 text-sm text-slate-500">{label}</p>
     </div>
@@ -239,23 +296,25 @@ function InfoRow({ icon, label }: { icon: ReactNode; label: string }) {
 }
 
 function formatDateTime(value: string) {
-  return new Date(value).toLocaleString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+  return new Date(value).toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
+  return new Date(value).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
   });
 }
 
 function formatBloodType(value?: string | null) {
-  return value ? value.replace('_POSITIVE', '+').replace('_NEGATIVE', '-').replace('_', '') : 'Blood type unavailable';
+  return value
+    ? value.replace("_POSITIVE", "+").replace("_NEGATIVE", "-").replace("_", "")
+    : "Blood type unavailable";
 }
