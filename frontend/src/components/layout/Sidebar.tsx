@@ -1,6 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import api from '../../api/axios';
 
 interface NavItem {
   label: string;
@@ -16,6 +18,7 @@ const adminNav: NavItem[] = [
   { label: "Consultations", path: "/consultations", icon: "ti-file-text" },
   { label: "Departments", path: "/departments", icon: "ti-building-hospital" },
   { label: "Insurances", path: "/insurances", icon: "ti-shield-check" },
+  { label: 'Medications', path: '/medications', icon: 'ti-pill' },
 ];
 
 const doctorNav: NavItem[] = [
@@ -32,6 +35,7 @@ const doctorNav: NavItem[] = [
     icon: "ti-file-text",
   },
   { label: "Schedule", path: "/doctor/schedule", icon: "ti-clock" },
+  { label: 'Notifications', path: '/notifications', icon: 'ti-bell' },
 ];
 
 const patientNav: NavItem[] = [
@@ -52,7 +56,7 @@ const patientNav: NavItem[] = [
     icon: "ti-file-text",
   },
   { label: "Prescriptions", path: "/patient/prescriptions", icon: "ti-pill" },
-  //{ label: 'Profile', path: '/patient/profile', icon: 'ti-user-circle' },
+  { label: 'Notifications', path: '/notifications', icon: 'ti-bell' },
 ];
 
 export default function Sidebar() {
@@ -77,6 +81,19 @@ export default function Sidebar() {
     ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase()
     : "U";
 
+  const { data: notifications = [] } = useQuery({
+    queryKey: ['notifications', user?.id],
+    queryFn: async () => {
+      const res = await api.get(`/api/notifications/user/${user!.id}`);
+      return res.data.data as any[];
+    },
+    enabled: !!user?.id,
+    refetchInterval: 30 * 1000,
+    staleTime: 0,
+  });
+
+  const unreadCount = notifications.filter((n: any) => n.status !== 'READ').length;
+
   return (
     <aside className="w-56 bg-slate-900 flex flex-col flex-shrink-0 h-screen">
       {/* Logo */}
@@ -91,24 +108,27 @@ export default function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
-        {navItems.map((item) => {
+      <nav className="flex-1 px-3 py-4 flex flex-col gap-1 overflow-y-auto">
+        {navItems.map(item => {
           const isActive = location.pathname === item.path;
+          const isNotifications = item.path === '/notifications';
           return (
             <Link
               key={item.path}
               to={item.path}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                 isActive
-                  ? "bg-slate-800 text-white"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                  ? 'bg-slate-800 text-white'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
               }`}
             >
-              <i
-                className={`ti ${item.icon} text-base ${isActive ? "text-blue-400" : ""}`}
-                aria-hidden="true"
-              />
+              <i className={`ti ${item.icon} text-base ${isActive ? 'text-blue-400' : ''}`} aria-hidden="true" />
               {item.label}
+              {isNotifications && unreadCount > 0 && (
+                <span className="ml-auto bg-blue-500 text-white text-xs font-medium px-1.5 py-0.5 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
             </Link>
           );
         })}

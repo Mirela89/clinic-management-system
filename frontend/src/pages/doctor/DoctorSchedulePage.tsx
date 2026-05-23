@@ -221,9 +221,6 @@ export default function DoctorSchedulePage() {
               <h2 className="text-lg font-semibold text-slate-900">
                 {editingScheduleId ? "Edit interval" : "Add interval"}
               </h2>
-              <p className="text-sm text-slate-500 mt-1">
-                One interval per weekday is allowed by the backend.
-              </p>
             </div>
             <div className="rounded-xl bg-blue-50 p-3 text-blue-600">
               {editingScheduleId ? (

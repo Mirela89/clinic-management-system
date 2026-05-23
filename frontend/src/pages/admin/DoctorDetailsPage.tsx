@@ -35,19 +35,27 @@ interface AppointmentResponse {
   consultationId: number | null;
 }
 
+interface ScheduleResponse {
+  id: number;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  slotDurationMinutes: number;
+  isAvailable: boolean;
+}
+
 const statusStyles: Record<string, string> = {
   SCHEDULED: "bg-blue-50 text-blue-700 border-blue-100",
   COMPLETED: "bg-emerald-50 text-emerald-700 border-emerald-100",
   CANCELLED: "bg-red-50 text-red-600 border-red-100",
 };
 
+const DAY_ORDER = ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"];
+
 function formatDateTime(value: string) {
   return new Date(value).toLocaleString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    day: "2-digit", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
   });
 }
 
@@ -56,16 +64,27 @@ export default function DoctorDetailsPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const doctorId = Number(id);
+
   const [editing, setEditing] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
-
   const [form, setForm] = useState({
     phone: "",
     specialization: "",
     licenseNumber: "",
     departmentId: "",
   });
+
+  const [scheduleModal, setScheduleModal] = useState(false);
+  const [editScheduleId, setEditScheduleId] = useState<number | null>(null);
+  const [scheduleForm, setScheduleForm] = useState({
+    dayOfWeek: "MONDAY",
+    startTime: "09:00",
+    endTime: "17:00",
+    slotDurationMinutes: "30",
+    isAvailable: true,
+  });
+  const [scheduleError, setScheduleError] = useState("");
 
   const { data: doctor, isLoading: loadingDoctor } = useQuery({
     queryKey: ["doctor", doctorId],
@@ -89,12 +108,19 @@ export default function DoctorDetailsPage() {
       const res = await api.get(`/api/appointments?page=0&size=100`);
       return (res.data.data.content as AppointmentResponse[])
         .filter((a: any) => a.doctorId === doctorId)
-        .sort(
-          (a: any, b: any) =>
-            new Date(b.appointmentDate).getTime() -
-            new Date(a.appointmentDate).getTime(),
+        .sort((a: any, b: any) =>
+          new Date(b.appointmentDate).getTime() - new Date(a.appointmentDate).getTime()
         );
     },
+  });
+
+  const { data: schedules = [], isLoading: loadingSchedules } = useQuery({
+    queryKey: ["doctor-schedule-admin", doctorId],
+    queryFn: async () => {
+      const res = await api.get(`/api/doctor-schedules/doctor/${doctorId}`);
+      return res.data.data as ScheduleResponse[];
+    },
+    staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {
@@ -119,7 +145,6 @@ export default function DoctorDetailsPage() {
         phone: form.phone || null,
         role: "DOCTOR",
       });
-
       await api.put(`/api/doctors/${doctorId}`, {
         userId: doctorId,
         specialization: form.specialization.trim(),
@@ -139,27 +164,104 @@ export default function DoctorDetailsPage() {
     },
   });
 
-  const handleSave = () => {
-    setSaveError("");
-    saveMutation.mutate();
+  const createScheduleMutation = useMutation({
+    mutationFn: async () => {
+      await api.post("/api/doctor-schedules", {
+        doctorId,
+        dayOfWeek: scheduleForm.dayOfWeek,
+        startTime: scheduleForm.startTime,
+        endTime: scheduleForm.endTime,
+        slotDurationMinutes: Number(scheduleForm.slotDurationMinutes),
+        isAvailable: scheduleForm.isAvailable,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["doctor-schedule-admin", doctorId] });
+      setScheduleModal(false);
+      setScheduleError("");
+      setScheduleForm({
+        dayOfWeek: "MONDAY",
+        startTime: "09:00",
+        endTime: "17:00",
+        slotDurationMinutes: "30",
+        isAvailable: true,
+      });
+    },
+    onError: (err: any) => {
+      setScheduleError(err.response?.data?.message || "Failed to save schedule.");
+    },
+  });
+
+  const updateScheduleMutation = useMutation({
+    mutationFn: async () => {
+      await api.put(`/api/doctor-schedules/${editScheduleId}`, {
+        doctorId,
+        dayOfWeek: scheduleForm.dayOfWeek,
+        startTime: scheduleForm.startTime,
+        endTime: scheduleForm.endTime,
+        slotDurationMinutes: Number(scheduleForm.slotDurationMinutes),
+        isAvailable: scheduleForm.isAvailable,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["doctor-schedule-admin", doctorId] });
+      setScheduleModal(false);
+      setEditScheduleId(null);
+      setScheduleError("");
+    },
+    onError: (err: any) => {
+      setScheduleError(err.response?.data?.message || "Failed to update schedule.");
+    },
+  });
+
+  const deleteScheduleMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await api.delete(`/api/doctor-schedules/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["doctor-schedule-admin", doctorId] });
+    },
+  });
+
+  const openAddSchedule = () => {
+    setEditScheduleId(null);
+    setScheduleForm({
+      dayOfWeek: "MONDAY",
+      startTime: "09:00",
+      endTime: "17:00",
+      slotDurationMinutes: "30",
+      isAvailable: true,
+    });
+    setScheduleError("");
+    setScheduleModal(true);
   };
 
-  if (loadingDoctor)
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
-      </div>
-    );
+  const openEditSchedule = (s: ScheduleResponse) => {
+    setEditScheduleId(s.id);
+    setScheduleForm({
+      dayOfWeek: s.dayOfWeek,
+      startTime: s.startTime.slice(0, 5),
+      endTime: s.endTime.slice(0, 5),
+      slotDurationMinutes: s.slotDurationMinutes.toString(),
+      isAvailable: s.isAvailable,
+    });
+    setScheduleError("");
+    setScheduleModal(true);
+  };
 
-  if (!doctor)
-    return (
-      <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
-        Doctor not found.
-      </div>
-    );
+  if (loadingDoctor) return (
+    <div className="flex justify-center items-center h-64">
+      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600" />
+    </div>
+  );
 
-  const initials =
-    `${doctor.user.firstName[0]}${doctor.user.lastName[0]}`.toUpperCase();
+  if (!doctor) return (
+    <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
+      Doctor not found.
+    </div>
+  );
+
+  const initials = `${doctor.user.firstName[0]}${doctor.user.lastName[0]}`.toUpperCase();
   const stats = {
     total: appointments.length,
     scheduled: appointments.filter((a) => a.status === "SCHEDULED").length,
@@ -185,8 +287,10 @@ export default function DoctorDetailsPage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
         {/* LEFT COLUMN */}
         <div className="flex flex-col gap-4">
+
           {/* Avatar card */}
           <div className="bg-white rounded-xl border border-slate-100 p-6 flex flex-col items-center text-center">
             <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center text-white font-medium text-xl mb-3">
@@ -195,9 +299,7 @@ export default function DoctorDetailsPage() {
             <h2 className="text-base font-semibold text-slate-900">
               Dr. {doctor.user.firstName} {doctor.user.lastName}
             </h2>
-            <p className="text-slate-400 text-sm mt-0.5">
-              @{doctor.user.username}
-            </p>
+            <p className="text-slate-400 text-sm mt-0.5">@{doctor.user.username}</p>
             <span className="inline-block mt-3 text-xs font-medium px-3 py-1 rounded-full bg-blue-100 text-blue-700">
               DOCTOR
             </span>
@@ -210,42 +312,30 @@ export default function DoctorDetailsPage() {
             </h3>
             <div className="flex flex-col gap-3">
               <InfoRow icon="ti-mail" label="Email" value={doctor.user.email} />
-              <InfoRow
-                icon="ti-phone"
-                label="Phone"
-                value={doctor.user.phone || "—"}
-              />
+              <InfoRow icon="ti-phone" label="Phone" value={doctor.user.phone || "—"} />
             </div>
           </div>
         </div>
 
         {/* RIGHT COLUMN */}
         <div className="lg:col-span-2 flex flex-col gap-4">
+
           {/* Medical profile */}
           <div className="bg-white rounded-xl border border-slate-100 p-5">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <i
-                    className="ti ti-stethoscope text-blue-500 text-base"
-                    aria-hidden="true"
-                  />
+                  <i className="ti ti-stethoscope text-blue-500 text-base" aria-hidden="true" />
                 </div>
                 <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wide">
                   Medical Profile
                 </h3>
               </div>
               <button
-                onClick={() => {
-                  setEditing((e) => !e);
-                  setSaveError("");
-                }}
+                onClick={() => { setEditing((e) => !e); setSaveError(""); }}
                 className="text-xs text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-1"
               >
-                <i
-                  className={`ti ${editing ? "ti-x" : "ti-pencil"} text-xs`}
-                  aria-hidden="true"
-                />
+                <i className={`ti ${editing ? "ti-x" : "ti-pencil"} text-xs`} aria-hidden="true" />
                 {editing ? "Cancel" : "Edit"}
               </button>
             </div>
@@ -255,9 +345,7 @@ export default function DoctorDetailsPage() {
                 <EditField label="Phone">
                   <input
                     value={form.phone}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, phone: e.target.value }))
-                    }
+                    onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
                     placeholder="0712 345 678"
                     className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -265,51 +353,40 @@ export default function DoctorDetailsPage() {
                 <EditField label="Specialization">
                   <input
                     value={form.specialization}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, specialization: e.target.value }))
-                    }
+                    onChange={(e) => setForm((p) => ({ ...p, specialization: e.target.value }))}
                     className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </EditField>
                 <EditField label="License number">
                   <input
                     value={form.licenseNumber}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, licenseNumber: e.target.value }))
-                    }
+                    onChange={(e) => setForm((p) => ({ ...p, licenseNumber: e.target.value }))}
                     className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </EditField>
                 <EditField label="Department">
                   <select
                     value={form.departmentId}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, departmentId: e.target.value }))
-                    }
+                    onChange={(e) => setForm((p) => ({ ...p, departmentId: e.target.value }))}
                     className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">No department</option>
                     {departments.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name}
-                      </option>
+                      <option key={d.id} value={d.id}>{d.name}</option>
                     ))}
                   </select>
                 </EditField>
 
                 {saveError && (
                   <div className="sm:col-span-2 bg-red-50 border border-red-100 text-red-500 text-sm rounded-lg px-3 py-2.5 flex items-center gap-2">
-                    <i
-                      className="ti ti-alert-circle text-base flex-shrink-0"
-                      aria-hidden="true"
-                    />
+                    <i className="ti ti-alert-circle text-base flex-shrink-0" aria-hidden="true" />
                     {saveError}
                   </div>
                 )}
 
                 <div className="sm:col-span-2 flex justify-end">
                   <button
-                    onClick={handleSave}
+                    onClick={() => { setSaveError(""); saveMutation.mutate(); }}
                     disabled={saveMutation.isPending}
                     className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2"
                   >
@@ -318,53 +395,103 @@ export default function DoctorDetailsPage() {
                         <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         Saving...
                       </>
-                    ) : (
-                      "Save changes"
-                    )}
+                    ) : "Save changes"}
                   </button>
                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                <InfoBlock
-                  label="Specialization"
-                  value={doctor.specialization}
-                />
-                <InfoBlock
-                  label="License Number"
-                  value={doctor.licenseNumber || "—"}
-                />
-                <InfoBlock
-                  label="Department"
-                  value={doctor.departmentName || "—"}
-                />
+                <InfoBlock label="Specialization" value={doctor.specialization} />
+                <InfoBlock label="License Number" value={doctor.licenseNumber || "—"} />
+                <InfoBlock label="Department" value={doctor.departmentName || "—"} />
               </div>
             )}
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4">
-            <StatCard
-              icon="ti-calendar"
-              label="Total"
-              value={stats.total}
-              color="text-slate-500"
-              bg="bg-slate-50"
-            />
-            <StatCard
-              icon="ti-clock"
-              label="Scheduled"
-              value={stats.scheduled}
-              color="text-blue-500"
-              bg="bg-blue-50"
-            />
-            <StatCard
-              icon="ti-circle-check"
-              label="Completed"
-              value={stats.completed}
-              color="text-emerald-500"
-              bg="bg-emerald-50"
-            />
+            <StatCard icon="ti-calendar" label="Total" value={stats.total} color="text-slate-500" bg="bg-slate-50" />
+            <StatCard icon="ti-clock" label="Scheduled" value={stats.scheduled} color="text-blue-500" bg="bg-blue-50" />
+            <StatCard icon="ti-circle-check" label="Completed" value={stats.completed} color="text-emerald-500" bg="bg-emerald-50" />
+          </div>
+
+          {/* Weekly Schedule */}
+          <div className="bg-white rounded-xl border border-slate-100 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                  <i className="ti ti-calendar-time text-emerald-500 text-base" aria-hidden="true" />
+                </div>
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  Weekly Schedule — {schedules.length} day{schedules.length !== 1 ? "s" : ""}
+                </h3>
+              </div>
+              <button
+                onClick={openAddSchedule}
+                className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 border border-blue-100 hover:border-blue-300 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <i className="ti ti-plus text-xs" aria-hidden="true" />
+                Add day
+              </button>
+            </div>
+
+            {loadingSchedules ? (
+              <div className="flex flex-col gap-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="animate-pulse h-12 bg-slate-50 rounded-lg" />
+                ))}
+              </div>
+            ) : schedules.length === 0 ? (
+              <p className="text-sm text-slate-400 text-center py-4">
+                No schedule set yet. Add available days for this doctor.
+              </p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {DAY_ORDER
+                  .filter((day) => schedules.some((s) => s.dayOfWeek === day))
+                  .map((day) => {
+                    const s = schedules.find((s) => s.dayOfWeek === day)!;
+                    return (
+                      <div
+                        key={s.id}
+                        className="flex items-center justify-between gap-3 border border-slate-50 rounded-lg px-3 py-2.5"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.isAvailable ? "bg-emerald-400" : "bg-slate-300"}`} />
+                          <div>
+                            <p className="text-sm font-medium text-slate-800">
+                              {day.charAt(0) + day.slice(1).toLowerCase()}
+                            </p>
+                            <p className="text-xs text-slate-400">
+                              {s.startTime.slice(0, 5)} – {s.endTime.slice(0, 5)} · {s.slotDurationMinutes} min slots
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {!s.isAvailable && (
+                            <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">
+                              Unavailable
+                            </span>
+                          )}
+                          <button
+                            onClick={() => openEditSchedule(s)}
+                            className="text-xs text-slate-400 hover:text-slate-700 border border-slate-200 hover:border-slate-300 px-2.5 py-1 rounded-lg transition-colors"
+                          >
+                            <i className="ti ti-pencil text-xs" aria-hidden="true" />
+                          </button>
+                          <button
+                            onClick={() => deleteScheduleMutation.mutate(s.id)}
+                            disabled={deleteScheduleMutation.isPending}
+                            className="text-xs text-red-400 hover:text-red-600 border border-red-100 hover:border-red-300 px-2.5 py-1 rounded-lg transition-colors disabled:opacity-50"
+                          >
+                            <i className="ti ti-trash text-xs" aria-hidden="true" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </div>
 
           {/* Appointments */}
@@ -375,16 +502,11 @@ export default function DoctorDetailsPage() {
             {loadingAppointments ? (
               <div className="flex flex-col gap-2">
                 {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="animate-pulse h-12 bg-slate-50 rounded-lg"
-                  />
+                  <div key={i} className="animate-pulse h-12 bg-slate-50 rounded-lg" />
                 ))}
               </div>
             ) : appointments.length === 0 ? (
-              <p className="text-sm text-slate-400 text-center py-4">
-                No appointments yet.
-              </p>
+              <p className="text-sm text-slate-400 text-center py-4">No appointments yet.</p>
             ) : (
               <div className="flex flex-col gap-2">
                 {appointments.slice(0, 5).map((a) => (
@@ -393,16 +515,10 @@ export default function DoctorDetailsPage() {
                     className="flex items-center justify-between gap-3 border border-slate-50 rounded-lg px-3 py-2.5"
                   >
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-slate-800 truncate">
-                        {a.patientName}
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        {formatDateTime(a.appointmentDate)}
-                      </p>
+                      <p className="text-sm font-medium text-slate-800 truncate">{a.patientName}</p>
+                      <p className="text-xs text-slate-400">{formatDateTime(a.appointmentDate)}</p>
                     </div>
-                    <span
-                      className={`text-xs font-medium px-2.5 py-1 rounded-full border flex-shrink-0 ${statusStyles[a.status]}`}
-                    >
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full border flex-shrink-0 ${statusStyles[a.status]}`}>
                       {a.status.charAt(0) + a.status.slice(1).toLowerCase()}
                     </span>
                   </div>
@@ -417,19 +533,143 @@ export default function DoctorDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Schedule Modal */}
+      {scheduleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-semibold text-slate-900">
+                {editScheduleId !== null ? "Edit schedule" : "Add schedule"}
+              </h2>
+              <button
+                onClick={() => { setScheduleModal(false); setEditScheduleId(null); setScheduleError(""); }}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <i className="ti ti-x text-lg" aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+
+              {/* Day */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Day of week
+                </label>
+                <select
+                  value={scheduleForm.dayOfWeek}
+                  onChange={(e) => setScheduleForm((p) => ({ ...p, dayOfWeek: e.target.value }))}
+                  disabled={editScheduleId !== null}
+                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-400"
+                >
+                  {DAY_ORDER.map((day) => (
+                    <option key={day} value={day}>
+                      {day.charAt(0) + day.slice(1).toLowerCase()}
+                    </option>
+                  ))}
+                </select>
+                {editScheduleId === null && (
+                  <p className="text-xs text-slate-400 mt-1">Cannot add duplicate days.</p>
+                )}
+              </div>
+
+              {/* Start + End time */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Start time
+                  </label>
+                  <input
+                    type="time"
+                    value={scheduleForm.startTime}
+                    onChange={(e) => setScheduleForm((p) => ({ ...p, startTime: e.target.value }))}
+                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    End time
+                  </label>
+                  <input
+                    type="time"
+                    value={scheduleForm.endTime}
+                    onChange={(e) => setScheduleForm((p) => ({ ...p, endTime: e.target.value }))}
+                    className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Slot duration */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Slot duration
+                </label>
+                <select
+                  value={scheduleForm.slotDurationMinutes}
+                  onChange={(e) => setScheduleForm((p) => ({ ...p, slotDurationMinutes: e.target.value }))}
+                  className="w-full border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {[15, 20, 30, 45, 60, 90].map((d) => (
+                    <option key={d} value={d}>{d} minutes</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Available toggle */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <div
+                  onClick={() => setScheduleForm((p) => ({ ...p, isAvailable: !p.isAvailable }))}
+                  className={`w-10 h-5 rounded-full transition-colors flex items-center px-0.5 cursor-pointer ${
+                    scheduleForm.isAvailable ? "bg-emerald-500" : "bg-slate-200"
+                  }`}
+                >
+                  <div className={`w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                    scheduleForm.isAvailable ? "translate-x-5" : "translate-x-0"
+                  }`} />
+                </div>
+                <span className="text-sm text-slate-700">Available for appointments</span>
+              </label>
+
+              {scheduleError && (
+                <div className="bg-red-50 border border-red-100 text-red-500 text-sm rounded-xl px-4 py-3 flex items-center gap-2">
+                  <i className="ti ti-alert-circle text-base flex-shrink-0" aria-hidden="true" />
+                  {scheduleError}
+                </div>
+              )}
+
+              <div className="flex gap-3 mt-2">
+                <button
+                  onClick={() => { setScheduleModal(false); setEditScheduleId(null); setScheduleError(""); }}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 rounded-xl text-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => editScheduleId !== null
+                    ? updateScheduleMutation.mutate()
+                    : createScheduleMutation.mutate()
+                  }
+                  disabled={createScheduleMutation.isPending || updateScheduleMutation.isPending}
+                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-medium py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {(createScheduleMutation.isPending || updateScheduleMutation.isPending) ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Saving...
+                    </>
+                  ) : editScheduleId !== null ? "Save changes" : "Add day"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function InfoRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: string;
-  label: string;
-  value: string;
-}) {
+function InfoRow({ icon, label, value }: { icon: string; label: string; value: string }) {
   return (
     <div>
       <div className="flex items-center gap-1.5 mb-0.5">
@@ -444,21 +684,13 @@ function InfoRow({
 function InfoBlock({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">
-        {label}
-      </p>
+      <p className="text-xs text-slate-400 uppercase tracking-wide mb-1">{label}</p>
       <p className="text-sm font-medium text-slate-800">{value}</p>
     </div>
   );
 }
 
-function EditField({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function EditField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
       <label className="block text-xs text-slate-500 mb-1.5">{label}</label>
@@ -467,24 +699,12 @@ function EditField({
   );
 }
 
-function StatCard({
-  icon,
-  label,
-  value,
-  color,
-  bg,
-}: {
-  icon: string;
-  label: string;
-  value: number;
-  color: string;
-  bg: string;
+function StatCard({ icon, label, value, color, bg }: {
+  icon: string; label: string; value: number; color: string; bg: string;
 }) {
   return (
     <div className="bg-white rounded-xl border border-slate-100 p-4">
-      <div
-        className={`w-8 h-8 ${bg} rounded-lg flex items-center justify-center mb-2`}
-      >
+      <div className={`w-8 h-8 ${bg} rounded-lg flex items-center justify-center mb-2`}>
         <i className={`ti ${icon} ${color} text-sm`} aria-hidden="true" />
       </div>
       <p className="text-xl font-semibold text-slate-900">{value}</p>

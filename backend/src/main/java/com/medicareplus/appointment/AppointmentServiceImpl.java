@@ -4,6 +4,10 @@ import com.medicareplus.common.exception.BusinessException;
 import com.medicareplus.common.exception.ResourceNotFoundException;
 import com.medicareplus.doctor.Doctor;
 import com.medicareplus.doctor.DoctorRepository;
+import com.medicareplus.notification.NotificationRequest;
+import com.medicareplus.notification.NotificationService;
+import com.medicareplus.notification.NotificationStatus;
+import com.medicareplus.notification.NotificationType;
 import com.medicareplus.patient.Patient;
 import com.medicareplus.patient.PatientRepository;
 import com.medicareplus.user.UserRole;
@@ -25,6 +29,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -37,6 +42,30 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         AppointmentResponse response = mapToResponse(appointmentRepository.save(appointment));
         log.info("Appointment created successfully with id: {}", response.getId());
+
+        // Notificare pacient
+        notificationService.createNotification(new NotificationRequest() {{
+            setUserId(appointment.getPatient().getUserId());
+            setType(NotificationType.APPOINTMENT_CONFIRMATION);
+            setStatus(NotificationStatus.SENT);
+            setMessage("Your appointment with Dr. " +
+                    appointment.getDoctor().getUser().getFirstName() + " " +
+                    appointment.getDoctor().getUser().getLastName() +
+                    " on " + appointment.getAppointmentDate().toLocalDate() +
+                    " has been confirmed.");
+        }});
+
+        // Notificare doctor
+        notificationService.createNotification(new NotificationRequest() {{
+            setUserId(appointment.getDoctor().getUserId());
+            setType(NotificationType.APPOINTMENT_CONFIRMATION);
+            setStatus(NotificationStatus.SENT);
+            setMessage("New appointment booked by " +
+                    appointment.getPatient().getUser().getFirstName() + " " +
+                    appointment.getPatient().getUser().getLastName() +
+                    " on " + appointment.getAppointmentDate().toLocalDate() + ".");
+        }});
+
         return response;
     }
 
@@ -86,6 +115,31 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new BusinessException("Only scheduled appointments can be cancelled.");
         }
         appointment.setStatus(AppointmentStatus.CANCELLED);
+
+        // Notificare pacient
+        notificationService.createNotification(new NotificationRequest() {{
+            setUserId(appointment.getPatient().getUserId());
+            setType(NotificationType.APPOINTMENT_CANCELLATION);
+            setStatus(NotificationStatus.SENT);
+            setMessage("Your appointment with Dr. " +
+                    appointment.getDoctor().getUser().getFirstName() + " " +
+                    appointment.getDoctor().getUser().getLastName() +
+                    " on " + appointment.getAppointmentDate().toLocalDate() +
+                    " has been cancelled.");
+        }});
+
+        // Notificare doctor
+        notificationService.createNotification(new NotificationRequest() {{
+            setUserId(appointment.getDoctor().getUserId());
+            setType(NotificationType.APPOINTMENT_CANCELLATION);
+            setStatus(NotificationStatus.SENT);
+            setMessage("Appointment with " +
+                    appointment.getPatient().getUser().getFirstName() + " " +
+                    appointment.getPatient().getUser().getLastName() +
+                    " on " + appointment.getAppointmentDate().toLocalDate() +
+                    " has been cancelled.");
+        }});
+
         return mapToResponse(appointmentRepository.save(appointment));
     }
 

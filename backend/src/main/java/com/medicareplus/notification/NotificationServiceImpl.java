@@ -76,6 +76,15 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
+    public NotificationResponse markAsRead(Long id) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Notification", id));
+        notification.setStatus(NotificationStatus.READ);
+        return mapToResponse(notificationRepository.save(notification));
+    }
+
+    @Override
+    @Transactional
     public void deleteNotification(Long id) {
         log.info("Deleting notification with id: {}", id);
         findNotification(id);

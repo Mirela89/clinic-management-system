@@ -28,6 +28,8 @@ import ServerErrorPage from './pages/error/ServerErrorPage';
 import NotFoundPage from './pages/error/NotFoundPage';
 import UnauthorizedPage from './pages/error/UnauthorizedPage';
 import ProfilePage from './pages/ProfilePage';
+import MedicationsPage from './pages/admin/MedicationsPage';
+import NotificationsPage from './pages/NotificationsPage';
 
 function ProtectedRoute({
   children,
@@ -127,6 +129,7 @@ function AppRoutes() {
         }
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="notifications" element={<NotificationsPage />} />
 
         {/* Admin routes */}
         <Route
@@ -209,6 +212,12 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="medications" element={
+          <ProtectedRoute roles={['ADMIN']}>
+            <MedicationsPage />
+          </ProtectedRoute>
+        } />
 
         {/* Doctor routes */}
         <Route path="doctor/dashboard" element={
