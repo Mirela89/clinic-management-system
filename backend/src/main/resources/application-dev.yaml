@@ -13,7 +13,7 @@ spring:
         format_sql: true
   data:
     mongodb:
-      uri: mongodb+srv://medicare_user:medicareMirela@medicare-cluster.k1cloqx.mongodb.net/?appName=medicare-cluster
+      uri: ${MONGODB_URI}
       database: medicare_analyses
   devtools:
     restart:
