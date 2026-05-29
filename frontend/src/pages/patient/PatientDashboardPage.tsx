@@ -187,6 +187,14 @@ export default function PatientDashboardPage() {
             color="text-purple-500"
             bg="bg-purple-50"
           />
+          <QuickLink
+            to="/patient/analyses"
+            icon="ti-microscope"
+            label="My Analyses"
+            description="View your medical analysis results"
+            color="text-orange-500"
+            bg="bg-orange-50"
+          />
         </div>
       </div>
     </div>

@@ -93,8 +93,16 @@ public class SecurityConfig {
                         // Endpoint-uri publice
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
+
+                        // Endpoint-uri specifice patient
                         .requestMatchers(HttpMethod.GET, "/api/consultations/patient/*").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/prescriptions/patient/*").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/analyses/patient/*").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/analysis-documents/patient/*").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/appointments/*/cancel").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/notifications/*/read").authenticated()
+
+                        // GET-uri accesibile tuturor
                         .requestMatchers(HttpMethod.GET, "/api/insurances").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/departments").authenticated()
 
@@ -109,13 +117,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/prescriptions/**").hasAnyRole("DOCTOR", "ADMIN")
                         .requestMatchers("/api/medications/**").hasAnyRole("DOCTOR", "ADMIN")
                         .requestMatchers("/api/analyses/**").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers("/api/analysis-documents/**").hasAnyRole("DOCTOR", "ADMIN")
 
                         // Endpoint-uri accesibile de toti utilizatorii autentificati
                         .requestMatchers("/api/appointments/**").authenticated()
                         .requestMatchers("/api/doctors/**").authenticated()
                         .requestMatchers("/api/patients/**").authenticated()
                         .requestMatchers("/api/notifications/**").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/api/appointments/*/cancel").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers("/api/doctor-schedules/**").authenticated()
 
                         // Orice alt request necesita autentificare
                         .anyRequest().authenticated()

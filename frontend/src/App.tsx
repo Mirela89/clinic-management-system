@@ -30,6 +30,7 @@ import UnauthorizedPage from './pages/error/UnauthorizedPage';
 import ProfilePage from './pages/ProfilePage';
 import MedicationsPage from './pages/admin/MedicationsPage';
 import NotificationsPage from './pages/NotificationsPage';
+import PatientAnalysesPage from './pages/patient/PatientAnalysesPage';
 
 function ProtectedRoute({
   children,
@@ -287,6 +288,11 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route path="patient/analyses" element={
+          <ProtectedRoute roles={['PATIENT']}>
+            <PatientAnalysesPage />
+          </ProtectedRoute>
+        } />
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />

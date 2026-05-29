@@ -57,6 +57,7 @@ const patientNav: NavItem[] = [
   },
   { label: "Prescriptions", path: "/patient/prescriptions", icon: "ti-pill" },
   { label: 'Notifications', path: '/notifications', icon: 'ti-bell' },
+  { label: 'Analyses', path: '/patient/analyses', icon: 'ti-microscope' },
 ];
 
 export default function Sidebar() {

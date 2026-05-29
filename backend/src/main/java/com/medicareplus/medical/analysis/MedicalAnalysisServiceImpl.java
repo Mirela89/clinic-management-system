@@ -4,6 +4,7 @@ import com.medicareplus.common.exception.BusinessException;
 import com.medicareplus.common.exception.ResourceNotFoundException;
 import com.medicareplus.doctor.Doctor;
 import com.medicareplus.doctor.DoctorRepository;
+import com.medicareplus.medical.analysis.document.AnalysisDocumentService;
 import com.medicareplus.medical.consultation.Consultation;
 import com.medicareplus.medical.consultation.ConsultationRepository;
 import com.medicareplus.patient.Patient;
@@ -25,6 +26,7 @@ public class MedicalAnalysisServiceImpl implements MedicalAnalysisService {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
     private final ConsultationRepository consultationRepository;
+    private final AnalysisDocumentService analysisDocumentService;
 
     @Override
     @Transactional
