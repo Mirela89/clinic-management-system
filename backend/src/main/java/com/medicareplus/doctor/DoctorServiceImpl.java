@@ -9,6 +9,8 @@ import com.medicareplus.user.UserRepository;
 import com.medicareplus.user.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ public class DoctorServiceImpl implements DoctorService {
     private final DepartmentRepository departmentRepository;
 
     @Override
+    @CacheEvict(value = "doctors", allEntries = true)
     @Transactional
     public DoctorResponse createDoctor(DoctorRequest request) {
         log.info("Creating doctor profile for userId: {}", request.getUserId());
@@ -55,6 +58,7 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
+    @Cacheable("doctors")
     public List<DoctorResponse> getAllDoctors() {
         log.debug("Fetching all doctors");
         return doctorRepository.findAll()
@@ -64,6 +68,7 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
+    @CacheEvict(value = "doctors", allEntries = true)
     @Transactional
     public DoctorResponse updateDoctor(Long userId, DoctorRequest request) {
         log.info("Updating doctor profile for userId: {}", userId);
@@ -87,6 +92,7 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
+    @CacheEvict(value = "doctors", allEntries = true)
     @Transactional
     public void deleteDoctor(Long userId) {
         log.info("Deleting doctor profile for userId: {}", userId);

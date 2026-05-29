@@ -4,6 +4,8 @@ import com.medicareplus.common.exception.BusinessException;
 import com.medicareplus.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class MedicationServiceImpl implements MedicationService {
     private final MedicationRepository medicationRepository;
 
     @Override
+    @CacheEvict(value = "medications", allEntries = true)
     @Transactional
     public MedicationResponse createMedication(MedicationRequest request) {
         log.info("Creating medication with name: {}", request.getName());
@@ -40,6 +43,7 @@ public class MedicationServiceImpl implements MedicationService {
     }
 
     @Override
+    @Cacheable("medications")
     @Transactional(readOnly = true)
     public Page<MedicationResponse> getAllMedications(Pageable pageable) {
         log.debug("Fetching medications - page: {}, size: {}, sort: {}",
@@ -49,6 +53,7 @@ public class MedicationServiceImpl implements MedicationService {
     }
 
     @Override
+    @CacheEvict(value = "medications", allEntries = true)
     @Transactional
     public MedicationResponse updateMedication(Long id, MedicationRequest request) {
         log.info("Updating medication with id: {}", id);
@@ -71,6 +76,7 @@ public class MedicationServiceImpl implements MedicationService {
     }
 
     @Override
+    @CacheEvict(value = "medications", allEntries = true)
     @Transactional
     public void deleteMedication(Long id) {
         log.info("Deleting medication with id: {}", id);

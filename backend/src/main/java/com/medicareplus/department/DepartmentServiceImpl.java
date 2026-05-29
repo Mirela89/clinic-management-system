@@ -4,6 +4,8 @@ import com.medicareplus.common.exception.BusinessException;
 import com.medicareplus.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final DepartmentRepository departmentRepository;
 
     @Override
+    @CacheEvict(value = "departments", allEntries = true)
     @Transactional
     public DepartmentResponse createDepartment(DepartmentRequest request) {
         log.info("Creating department with name: {}", request.getName());
@@ -39,6 +42,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
+    @Cacheable("departments")
     @Transactional(readOnly = true)
     public List<DepartmentResponse> getAllDepartments() {
         log.debug("Fetching all departments");
@@ -49,6 +53,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
+    @CacheEvict(value = "departments", allEntries = true)
     @Transactional
     public DepartmentResponse updateDepartment(Long id, DepartmentRequest request) {
         log.info("Updating department with id: {}", id);
@@ -63,6 +68,7 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
+    @CacheEvict(value = "departments", allEntries = true)
     @Transactional
     public void deleteDepartment(Long id) {
         log.info("Deleting department with id: {}", id);
