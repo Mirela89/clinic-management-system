@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${DB_NAME:medicare_medical}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: medicare_analyses
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
