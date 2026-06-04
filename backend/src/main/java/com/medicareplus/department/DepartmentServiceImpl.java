@@ -3,12 +3,16 @@ package com.medicareplus.department;
 import com.medicareplus.common.exception.BusinessException;
 import com.medicareplus.common.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DepartmentServiceImpl implements DepartmentService {
@@ -16,25 +20,32 @@ public class DepartmentServiceImpl implements DepartmentService {
     private final DepartmentRepository departmentRepository;
 
     @Override
+    @CacheEvict(value = "departments", allEntries = true)
     @Transactional
     public DepartmentResponse createDepartment(DepartmentRequest request) {
+        log.info("Creating department with name: {}", request.getName());
         validateDepartmentName(request.getName(), null);
 
         Department department = new Department();
         applyChanges(department, request);
 
-        return mapToResponse(departmentRepository.save(department));
+        DepartmentResponse response = mapToResponse(departmentRepository.save(department));
+        log.info("Department created successfully with id: {}", response.getId());
+        return response;
     }
 
     @Override
     @Transactional(readOnly = true)
     public DepartmentResponse getDepartmentById(Long id) {
+        log.debug("Fetching department with id: {}", id);
         return mapToResponse(findDepartment(id));
     }
 
     @Override
+    @Cacheable("departments")
     @Transactional(readOnly = true)
     public List<DepartmentResponse> getAllDepartments() {
+        log.debug("Fetching all departments");
         return departmentRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
@@ -42,24 +53,31 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
+    @CacheEvict(value = "departments", allEntries = true)
     @Transactional
     public DepartmentResponse updateDepartment(Long id, DepartmentRequest request) {
+        log.info("Updating department with id: {}", id);
         Department department = findDepartment(id);
         validateDepartmentName(request.getName(), department.getName());
 
         applyChanges(department, request);
 
-        return mapToResponse(departmentRepository.save(department));
+        DepartmentResponse response = mapToResponse(departmentRepository.save(department));
+        log.info("Department updated successfully with id: {}", id);
+        return response;
     }
 
     @Override
+    @CacheEvict(value = "departments", allEntries = true)
     @Transactional
     public void deleteDepartment(Long id) {
+        log.info("Deleting department with id: {}", id);
         findDepartment(id);
         if (departmentRepository.hasDoctors(id)) {
             throw new BusinessException("Department cannot be deleted because doctors are linked to it.");
         }
         departmentRepository.deleteById(id);
+        log.info("Department deleted successfully with id: {}", id);
     }
 
     private Department findDepartment(Long id) {

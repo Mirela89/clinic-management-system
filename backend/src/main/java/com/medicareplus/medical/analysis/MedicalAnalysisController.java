@@ -78,7 +78,7 @@ public class MedicalAnalysisController {
     }
 
     @GetMapping("/patient/{patientId}")
-    @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR', 'ADMIN')")
     @Operation(summary = "Get analyses by patient")
     public ResponseEntity<AppResponse<List<MedicalAnalysisResponse>>> getAnalysesByPatient(
             @PathVariable Long patientId) {

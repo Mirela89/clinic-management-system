@@ -1,6 +1,7 @@
 package com.medicareplus.common.exception;
 
 import com.medicareplus.common.dto.AppResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -18,6 +20,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<AppResponse<Void>> handleResourceNotFoundException(
             ResourceNotFoundException ex) {
+        log.warn("Resource not found: {}", ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(AppResponse.error(ex.getMessage()));
@@ -27,6 +30,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<AppResponse<Void>> handleBusinessException(
             BusinessException ex) {
+        log.warn("Business rule violation: {}", ex.getMessage());
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(AppResponse.error(ex.getMessage()));
@@ -42,6 +46,7 @@ public class GlobalExceptionHandler {
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
+        log.warn("Validation failed for {} field(s): {}", errors.size(), errors);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(AppResponse.error("Validation error"));
@@ -50,9 +55,9 @@ public class GlobalExceptionHandler {
     // 500 - Generic exception handler for unexpected errors
     @ExceptionHandler(Exception.class)
     public ResponseEntity<AppResponse<Void>> handleGenericException(Exception ex) {
+        log.error("Unexpected error occurred: {}", ex.getMessage(), ex);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(AppResponse.error("An unexpected error occured: " + ex.getMessage()));
+                .body(AppResponse.error("An unexpected error occurred: " + ex.getMessage()));
     }
-
 }

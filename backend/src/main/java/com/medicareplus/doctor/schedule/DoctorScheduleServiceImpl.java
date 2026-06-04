@@ -5,12 +5,14 @@ import com.medicareplus.common.exception.ResourceNotFoundException;
 import com.medicareplus.doctor.Doctor;
 import com.medicareplus.doctor.DoctorRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DoctorScheduleServiceImpl implements DoctorScheduleService {
@@ -21,6 +23,7 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
     @Override
     @Transactional
     public DoctorScheduleResponse createSchedule(DoctorScheduleRequest request) {
+        log.info("Creating schedule for doctorId: {} on {}", request.getDoctorId(), request.getDayOfWeek());
         Doctor doctor = findDoctor(request.getDoctorId());
 
         if (scheduleRepository.existsByDoctorUserIdAndDayOfWeek(
@@ -34,18 +37,22 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
         DoctorSchedule schedule = new DoctorSchedule();
         applyChanges(schedule, request, doctor);
 
-        return mapToResponse(scheduleRepository.save(schedule));
+        DoctorScheduleResponse response = mapToResponse(scheduleRepository.save(schedule));
+        log.info("Schedule created successfully with id: {}", response.getId());
+        return response;
     }
 
     @Override
     @Transactional(readOnly = true)
     public DoctorScheduleResponse getScheduleById(Long id) {
+        log.debug("Fetching schedule with id: {}", id);
         return mapToResponse(findSchedule(id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<DoctorScheduleResponse> getSchedulesByDoctorId(Long doctorId) {
+        log.debug("Fetching schedules for doctorId: {}", doctorId);
         findDoctor(doctorId);
         return scheduleRepository.findByDoctorUserId(doctorId)
                 .stream()
@@ -56,6 +63,7 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
     @Override
     @Transactional(readOnly = true)
     public List<DoctorScheduleResponse> getAllSchedules() {
+        log.debug("Fetching all schedules");
         return scheduleRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
@@ -65,6 +73,7 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
     @Override
     @Transactional
     public DoctorScheduleResponse updateSchedule(Long id, DoctorScheduleRequest request) {
+        log.info("Updating schedule with id: {}", id);
         DoctorSchedule schedule = findSchedule(id);
         Doctor doctor = findDoctor(request.getDoctorId());
 
@@ -81,16 +90,20 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
         validateTimeRange(request);
         applyChanges(schedule, request, doctor);
 
-        return mapToResponse(scheduleRepository.save(schedule));
+        DoctorScheduleResponse response = mapToResponse(scheduleRepository.save(schedule));
+        log.info("Schedule updated successfully with id: {}", id);
+        return response;
     }
 
     @Override
     @Transactional
     public void deleteSchedule(Long id) {
+        log.info("Deleting schedule with id: {}", id);
         if (!scheduleRepository.existsById(id)) {
             throw new ResourceNotFoundException("DoctorSchedule", id);
         }
         scheduleRepository.deleteById(id);
+        log.info("Schedule deleted successfully with id: {}", id);
     }
 
     private DoctorSchedule findSchedule(Long id) {

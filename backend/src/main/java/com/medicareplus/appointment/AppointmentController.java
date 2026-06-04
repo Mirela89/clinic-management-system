@@ -7,6 +7,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,13 +28,24 @@ public class AppointmentController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Get all appointments", description = "Returns a list of all appointments.")
+    @Operation(summary = "Get all appointments", description = "Returns a paginated list of appointments.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Appointments retrieved successfully"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Authentication required")
     })
-    public ResponseEntity<AppResponse<List<AppointmentResponse>>> getAllAppointments() {
-        return ResponseEntity.ok(AppResponse.success(appointmentService.getAllAppointments()));
+    public ResponseEntity<AppResponse<Page<AppointmentResponse>>> getAllAppointments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "appointmentDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        Pageable pageable = PageRequest.of(
+                page, size,
+                sortDir.equalsIgnoreCase("asc") ?
+                        Sort.by(sortBy).ascending() :
+                        Sort.by(sortBy).descending()
+        );
+        return ResponseEntity.ok(AppResponse.success(appointmentService.getAllAppointments(pageable)));
     }
 
     @GetMapping("/{id}")
@@ -61,6 +76,19 @@ public class AppointmentController {
                 .body(AppResponse.success("Appointment created successfully.", appointmentService.createAppointment(request)));
     }
 
+    @GetMapping("/patient/{patientId}")
+    @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR', 'ADMIN')")
+    @Operation(summary = "Get appointments by patient")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Appointments retrieved successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+    })
+    public ResponseEntity<AppResponse<List<AppointmentResponse>>> getAppointmentsByPatient(
+            @Parameter(description = "Patient ID") @PathVariable Long patientId) {
+        return ResponseEntity.ok(AppResponse.success(
+                appointmentService.getAppointmentsByPatientId(patientId)));
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     @Operation(summary = "Update appointment", description = "Updates an existing appointment.")
@@ -75,6 +103,21 @@ public class AppointmentController {
             @Valid @RequestBody AppointmentRequest request) {
         return ResponseEntity.ok(
                 AppResponse.success("Appointment updated successfully.", appointmentService.updateAppointment(id, request)));
+    }
+
+    @PatchMapping("/{id}/cancel")
+    @PreAuthorize("hasAnyRole('PATIENT', 'DOCTOR', 'ADMIN')")
+    @Operation(summary = "Cancel appointment")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Appointment cancelled successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Appointment cannot be cancelled"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Appointment not found")
+    })
+    public ResponseEntity<AppResponse<AppointmentResponse>> cancelAppointment(
+            @Parameter(description = "Appointment ID") @PathVariable Long id) {
+        return ResponseEntity.ok(AppResponse.success(
+                "Appointment cancelled successfully.",
+                appointmentService.cancelAppointment(id)));
     }
 
     @DeleteMapping("/{id}")

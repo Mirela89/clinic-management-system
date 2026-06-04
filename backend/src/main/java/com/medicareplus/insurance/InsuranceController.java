@@ -23,7 +23,7 @@ public class InsuranceController {
     private final InsuranceService insuranceService;
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Get all insurances", description = "Returns a list of all insurances.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Insurances retrieved successfully"),

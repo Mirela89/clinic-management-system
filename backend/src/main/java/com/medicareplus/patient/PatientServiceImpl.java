@@ -5,16 +5,19 @@ import com.medicareplus.common.exception.ResourceNotFoundException;
 import com.medicareplus.insurance.Insurance;
 import com.medicareplus.insurance.InsuranceRepository;
 import com.medicareplus.user.User;
-import com.medicareplus.user.UserInfoResponse;
 import com.medicareplus.user.UserRepository;
 import com.medicareplus.user.UserRole;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PatientServiceImpl implements PatientService {
@@ -26,6 +29,8 @@ public class PatientServiceImpl implements PatientService {
     @Override
     @Transactional
     public PatientResponse createPatient(PatientRequest request) {
+        log.info("Creating patient profile for userId: {}", request.getUserId());
+
         if (patientRepository.existsById(request.getUserId())) {
             throw new BusinessException("Patient profile already exists for this user.");
         }
@@ -44,32 +49,37 @@ public class PatientServiceImpl implements PatientService {
         patient.setBloodType(request.getBloodType());
         patient.setInsurance(insurance);
 
-        return mapToResponse(patientRepository.save(patient));
+        PatientResponse response = mapToResponse(patientRepository.save(patient));
+        log.info("Patient profile created successfully for userId: {}", request.getUserId());
+        return response;
     }
 
     @Override
     public PatientResponse getPatientById(Long userId) {
+        log.debug("Fetching patient with userId: {}", userId);
         return mapToResponse(findPatient(userId));
     }
 
     @Override
-    public List<PatientResponse> getAllPatients() {
-        return patientRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public Page<PatientResponse> getAllPatients(Pageable pageable) {
+        log.debug("Fetching patients - page: {}, size: {}, sort: {}",
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+        return patientRepository.findAll(pageable)
+                .map(this::mapToResponse);
     }
 
     @Override
     @Transactional
     public PatientResponse updatePatient(Long userId, PatientRequest request) {
+        log.info("Updating patient profile for userId: {}", userId);
         Patient patient = findPatient(userId);
 
         if (!userId.equals(request.getUserId())) {
             throw new BusinessException("Patient user ID cannot be changed.");
         }
-
-        if (!patient.getCnp().equals(request.getCnp()) && patientRepository.existsByCnp(request.getCnp())) {
+        if (!patient.getCnp().equals(request.getCnp()) &&
+                patientRepository.existsByCnp(request.getCnp())) {
             throw new BusinessException("CNP already in use.");
         }
 
@@ -82,17 +92,21 @@ public class PatientServiceImpl implements PatientService {
         patient.setBloodType(request.getBloodType());
         patient.setInsurance(insurance);
 
-        return mapToResponse(patientRepository.save(patient));
+        PatientResponse response = mapToResponse(patientRepository.save(patient));
+        log.info("Patient profile updated successfully for userId: {}", userId);
+        return response;
     }
 
     @Override
     @Transactional
     public void deletePatient(Long userId) {
+        log.info("Deleting patient profile for userId: {}", userId);
         findPatient(userId);
         if (patientRepository.hasAppointments(userId)) {
             throw new BusinessException("Patient cannot be deleted because appointments are linked to this profile.");
         }
         patientRepository.deleteById(userId);
+        log.info("Patient profile deleted successfully for userId: {}", userId);
     }
 
     private Patient findPatient(Long userId) {

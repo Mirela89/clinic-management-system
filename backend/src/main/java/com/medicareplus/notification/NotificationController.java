@@ -91,6 +91,15 @@ public class NotificationController {
                 notificationService.getNotificationsByUserId(userId)));
     }
 
+    @PatchMapping("/{id}/read")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Mark notification as read")
+    public ResponseEntity<AppResponse<NotificationResponse>> markAsRead(
+            @PathVariable Long id) {
+        return ResponseEntity.ok(AppResponse.success(
+                notificationService.markAsRead(id)));
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Delete notification", description = "Deletes a notification by ID.")

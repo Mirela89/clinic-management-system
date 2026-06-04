@@ -3,6 +3,7 @@ package com.medicareplus.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -59,8 +60,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://localhost:5173"
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true); // necesar pentru cookies de sesiune
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -90,6 +94,18 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
 
+                        // Endpoint-uri specifice patient
+                        .requestMatchers(HttpMethod.GET, "/api/consultations/patient/*").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/prescriptions/patient/*").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/analyses/patient/*").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/analysis-documents/patient/*").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/appointments/*/cancel").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/notifications/*/read").authenticated()
+
+                        // GET-uri accesibile tuturor
+                        .requestMatchers(HttpMethod.GET, "/api/insurances").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/departments").authenticated()
+
                         // Endpoint-uri admin
                         .requestMatchers("/api/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/departments/**").hasRole("ADMIN")
@@ -101,12 +117,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/prescriptions/**").hasAnyRole("DOCTOR", "ADMIN")
                         .requestMatchers("/api/medications/**").hasAnyRole("DOCTOR", "ADMIN")
                         .requestMatchers("/api/analyses/**").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers("/api/analysis-documents/**").hasAnyRole("DOCTOR", "ADMIN")
 
                         // Endpoint-uri accesibile de toti utilizatorii autentificati
                         .requestMatchers("/api/appointments/**").authenticated()
                         .requestMatchers("/api/doctors/**").authenticated()
                         .requestMatchers("/api/patients/**").authenticated()
                         .requestMatchers("/api/notifications/**").authenticated()
+                        .requestMatchers("/api/doctor-schedules/**").authenticated()
 
                         // Orice alt request necesita autentificare
                         .anyRequest().authenticated()

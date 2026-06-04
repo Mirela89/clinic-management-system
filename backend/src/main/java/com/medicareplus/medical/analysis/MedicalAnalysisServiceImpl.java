@@ -4,17 +4,20 @@ import com.medicareplus.common.exception.BusinessException;
 import com.medicareplus.common.exception.ResourceNotFoundException;
 import com.medicareplus.doctor.Doctor;
 import com.medicareplus.doctor.DoctorRepository;
+import com.medicareplus.medical.analysis.document.AnalysisDocumentService;
 import com.medicareplus.medical.consultation.Consultation;
 import com.medicareplus.medical.consultation.ConsultationRepository;
 import com.medicareplus.patient.Patient;
 import com.medicareplus.patient.PatientRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MedicalAnalysisServiceImpl implements MedicalAnalysisService {
@@ -23,25 +26,33 @@ public class MedicalAnalysisServiceImpl implements MedicalAnalysisService {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
     private final ConsultationRepository consultationRepository;
+    private final AnalysisDocumentService analysisDocumentService;
 
     @Override
     @Transactional
     public MedicalAnalysisResponse createAnalysis(MedicalAnalysisRequest request) {
+        log.info("Creating medical analysis for patientId: {} with doctorId: {}",
+                request.getPatientId(), request.getDoctorId());
+
         MedicalAnalysis analysis = new MedicalAnalysis();
         applyChanges(analysis, request);
 
-        return mapToResponse(medicalAnalysisRepository.save(analysis));
+        MedicalAnalysisResponse response = mapToResponse(medicalAnalysisRepository.save(analysis));
+        log.info("Medical analysis created successfully with id: {}", response.getId());
+        return response;
     }
 
     @Override
     @Transactional(readOnly = true)
     public MedicalAnalysisResponse getAnalysisById(Long id) {
+        log.debug("Fetching medical analysis with id: {}", id);
         return mapToResponse(findAnalysis(id));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<MedicalAnalysisResponse> getAllAnalyses() {
+        log.debug("Fetching all medical analyses");
         return medicalAnalysisRepository.findAll()
                 .stream()
                 .map(this::mapToResponse)
@@ -51,15 +62,19 @@ public class MedicalAnalysisServiceImpl implements MedicalAnalysisService {
     @Override
     @Transactional
     public MedicalAnalysisResponse updateAnalysis(Long id, MedicalAnalysisRequest request) {
+        log.info("Updating medical analysis with id: {}", id);
         MedicalAnalysis analysis = findAnalysis(id);
         applyChanges(analysis, request);
 
-        return mapToResponse(medicalAnalysisRepository.save(analysis));
+        MedicalAnalysisResponse response = mapToResponse(medicalAnalysisRepository.save(analysis));
+        log.info("Medical analysis updated successfully with id: {}", id);
+        return response;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<MedicalAnalysisResponse> getAnalysesByPatientId(Long patientId) {
+        log.debug("Fetching medical analyses for patientId: {}", patientId);
         return medicalAnalysisRepository.findByPatientUserId(patientId)
                 .stream()
                 .map(this::mapToResponse)
@@ -69,6 +84,7 @@ public class MedicalAnalysisServiceImpl implements MedicalAnalysisService {
     @Override
     @Transactional(readOnly = true)
     public List<MedicalAnalysisResponse> getAnalysesByDoctorId(Long doctorId) {
+        log.debug("Fetching medical analyses for doctorId: {}", doctorId);
         return medicalAnalysisRepository.findByDoctorUserId(doctorId)
                 .stream()
                 .map(this::mapToResponse)
@@ -78,8 +94,10 @@ public class MedicalAnalysisServiceImpl implements MedicalAnalysisService {
     @Override
     @Transactional
     public void deleteAnalysis(Long id) {
+        log.info("Deleting medical analysis with id: {}", id);
         findAnalysis(id);
         medicalAnalysisRepository.deleteById(id);
+        log.info("Medical analysis deleted successfully with id: {}", id);
     }
 
     private MedicalAnalysis findAnalysis(Long id) {

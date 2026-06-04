@@ -7,6 +7,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,13 +28,25 @@ public class MedicationController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('DOCTOR', 'ADMIN')")
-    @Operation(summary = "Get all medications", description = "Returns a list of all medications.")
+    @Operation(summary = "Get all medications", description = "Returns a paginated list of medications.")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Medications retrieved successfully"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<AppResponse<List<MedicationResponse>>> getAllMedications() {
-        return ResponseEntity.ok(AppResponse.success(medicationService.getAllMedications()));
+    public ResponseEntity<AppResponse<Page<MedicationResponse>>> getAllMedications(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
+
+        Pageable pageable = PageRequest.of(
+                page, size,
+                sortDir.equalsIgnoreCase("asc") ?
+                        Sort.by(sortBy).ascending() :
+                        Sort.by(sortBy).descending()
+        );
+        return ResponseEntity.ok(AppResponse.success(
+                medicationService.getAllMedications(pageable)));
     }
 
     @GetMapping("/{id}")

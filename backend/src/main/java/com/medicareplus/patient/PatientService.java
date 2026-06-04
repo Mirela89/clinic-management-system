@@ -1,6 +1,7 @@
 package com.medicareplus.patient;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface PatientService {
 
@@ -8,7 +9,7 @@ public interface PatientService {
 
     PatientResponse getPatientById(Long userId);
 
-    List<PatientResponse> getAllPatients();
+    Page<PatientResponse> getAllPatients(Pageable pageable);
 
     PatientResponse updatePatient(Long userId, PatientRequest request);
 
