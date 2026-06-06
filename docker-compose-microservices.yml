@@ -31,6 +31,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    environment:
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
 
   api-gateway:
     build:
@@ -41,6 +43,7 @@ services:
       - "8085:8085"
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
     depends_on:
       discovery-server:
         condition: service_healthy
@@ -66,6 +69,7 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
     depends_on:
       postgres:
         condition: service_healthy
@@ -93,6 +97,7 @@ services:
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
     depends_on:
       postgres:
         condition: service_healthy
@@ -121,6 +126,7 @@ services:
       DB_PASSWORD: postgres
       MONGODB_URI: ${MONGODB_URI}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      ZIPKIN_ENDPOINT: http://zipkin:9411/api/v2/spans
     depends_on:
       postgres:
         condition: service_healthy
@@ -130,6 +136,12 @@ services:
         condition: service_healthy
       notification-service:
         condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   frontend:
     build:
@@ -141,7 +153,49 @@ services:
       api-gateway:
         condition: service_healthy
       medical-service:
-        condition: service_started
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:v3.0.1
+    container_name: medicare-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      medical-service:
+        condition: service_healthy
+      notification-service:
+        condition: service_healthy
+
+  grafana:
+    image: grafana/grafana:11.3.1
+    container_name: medicare-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin1
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+
+  zipkin:
+    image: openzipkin/zipkin:3.4
+    container_name: medicare-zipkin
+    ports:
+      - "9411:9411"
 
 volumes:
   postgres_micro_data:
+  grafana_data:

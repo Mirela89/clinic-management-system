@@ -71,7 +71,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/swagger-ui/**", "/api-docs/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         // Permite accesul intern intre microservicii
                         .requestMatchers("/api/patients/**").permitAll()
                         .requestMatchers("/api/doctors/**").permitAll()
