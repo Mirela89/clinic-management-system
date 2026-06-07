@@ -73,9 +73,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       formData.append("remember-me", "on");
     }
 
-    await api.post("/api/auth/login", formData, {
+    // Login si salveaza token-ul JWT
+    const loginRes = await api.post("/api/auth/login", formData, {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
+
+    const token = loginRes.data.token;
+    if (token) {
+      localStorage.setItem('jwt_token', token);
+    }
 
     const res = await api.get("/api/auth/me");
     const userData = res.data.data;
@@ -85,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await api.post("/api/auth/logout");
+    localStorage.removeItem('jwt_token');
     setUser(null);
     setHasProfile(null);
   };

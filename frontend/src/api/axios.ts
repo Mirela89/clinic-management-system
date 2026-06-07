@@ -8,13 +8,21 @@ const api = axios.create({
   },
 });
 
+// Adaugă token la fiecare request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('jwt_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
 
     if (!error.response) {
-      // Rețea down sau backend oprit
       if (window.location.pathname !== '/500') {
         window.location.href = "/500";
       }
@@ -22,7 +30,7 @@ api.interceptors.response.use(
     }
 
     if (status === 401) {
-      // Neautentificat → redirect la login
+      localStorage.removeItem('jwt_token');
       if (window.location.pathname !== '/login') {
         window.location.href = "/login";
       }

@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -18,13 +19,19 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final AuditLogService auditLogService;
     private final UserRepository userRepository;
+    private final JwtService jwtService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
-        // Loghează login
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String role = authentication.getAuthorities().iterator().next().getAuthority();
+
         userRepository.findByUsername(authentication.getName()).ifPresent(user -> {
+            // Generează JWT token
+            String token = jwtService.generateToken(userDetails, user.getId());
+
             auditLogService.log(
                     user.getId(),
                     AuditAction.LOGIN,
@@ -33,15 +40,19 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
                     "User logged in: " + user.getUsername(),
                     request.getRemoteAddr()
             );
-        });
 
-        // Răspuns JSON
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/json");
-        response.getWriter().write(
-                "{\"success\": true, \"message\": \"Login successful\", " +
-                        "\"role\": \"" + authentication.getAuthorities()
-                        .iterator().next().getAuthority() + "\"}"
-        );
+            // Răspuns JSON cu token
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType("application/json");
+            try {
+                response.getWriter().write(
+                        "{\"success\": true, \"message\": \"Login successful\", " +
+                                "\"token\": \"" + token + "\", " +
+                                "\"role\": \"" + role + "\"}"
+                );
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }
