@@ -1,3 +1,4 @@
+ALTER TABLE medications ADD CONSTRAINT IF NOT EXISTS medications_name_unique UNIQUE (name);
 INSERT INTO medications (name, active_substance, dosage, manufacturer) VALUES ('Paracetamol 500mg', 'Paracetamol', '500mg', 'Terapia') ON CONFLICT (name) DO NOTHING;
 INSERT INTO medications (name, active_substance, dosage, manufacturer) VALUES ('Paracetamol 1000mg', 'Paracetamol', '1000mg', 'Terapia') ON CONFLICT (name) DO NOTHING;
 INSERT INTO medications (name, active_substance, dosage, manufacturer) VALUES ('Nurofen 200mg', 'Ibuprofen', '200mg', 'Reckitt') ON CONFLICT (name) DO NOTHING;
