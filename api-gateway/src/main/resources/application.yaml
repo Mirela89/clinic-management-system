@@ -1,0 +1,80 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowed-origins: "http://localhost:5173"
+                allowed-methods:
+                  - GET
+                  - POST
+                  - PUT
+                  - DELETE
+                  - OPTIONS
+                  - PATCH
+                allowed-headers: "*"
+                allow-credentials: true
+                exposed-headers:
+                  - "Set-Cookie"
+                  - "X-XSRF-TOKEN"
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+          routes:
+            - id: user-service
+              uri: lb://user-service
+              predicates:
+                - Path=/api/users/**, /api/patients/**, /api/doctors/**, /api/departments/**, /api/insurances/**, /api/auth/**
+              filters:
+                - StripPrefix=0
+
+            - id: medical-service
+              uri: lb://medical-service
+              predicates:
+                - Path=/api/appointments/**, /api/consultations/**, /api/prescriptions/**, /api/medications/**, /api/analyses/**, /api/analysis-documents/**, /api/doctor-schedules/**
+              filters:
+                - StripPrefix=0
+
+            - id: notification-service
+              uri: lb://notification-service
+              predicates:
+                - Path=/api/notifications/**, /api/audit/**
+              filters:
+                - StripPrefix=0
+
+            - id: cache-service
+              uri: lb://user-service
+              predicates:
+                - Path=/api/cache/**
+              filters:
+                - StripPrefix=0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus, gateway
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT:http://localhost:9411/api/v2/spans}
