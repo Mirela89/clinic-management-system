@@ -15,6 +15,14 @@ spring:
     restart:
       enabled: true
 
+server:
+  servlet:
+    session:
+      cookie:
+        same-site: none
+        secure: true
+        http-only: true
+
 logging:
   level:
     org.hibernate.SQL: DEBUG
