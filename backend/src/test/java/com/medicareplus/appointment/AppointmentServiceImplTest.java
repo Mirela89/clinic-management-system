@@ -3,6 +3,8 @@ package com.medicareplus.appointment;
 import com.medicareplus.common.exception.BusinessException;
 import com.medicareplus.doctor.Doctor;
 import com.medicareplus.doctor.DoctorRepository;
+import com.medicareplus.notification.NotificationRequest;
+import com.medicareplus.notification.NotificationService;
 import com.medicareplus.patient.Patient;
 import com.medicareplus.patient.PatientRepository;
 import com.medicareplus.support.TestDataFactory;
@@ -24,6 +26,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,6 +41,9 @@ class AppointmentServiceImplTest {
 
     @Mock
     private DoctorRepository doctorRepository;
+
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private AppointmentServiceImpl service;
@@ -69,6 +76,7 @@ class AppointmentServiceImplTest {
         assertEquals(1L, response.getPatientId());
         assertEquals("First1 Last1", response.getPatientName());
         assertEquals("First2 Last2", response.getDoctorName());
+        verify(notificationService, times(2)).createNotification(any(NotificationRequest.class));
     }
 
     @Test
